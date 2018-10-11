@@ -51,11 +51,11 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         tray_menu.addAction(action)
         tray_menu.addAction(action_settings)
         self.tray_icon.setContextMenu(tray_menu)
-        self.pushButton_cancel.clicked.connect(self.close)
+        self.pushButton_cancel.clicked.connect(self.closex)
         self.pushButton_ok.clicked.connect(self.ok)
         self.tray_icon.show()
 
-    def close(self):
+    def closex(self):
         self.hide()
 
     def ok(self):
