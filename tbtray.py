@@ -40,6 +40,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.traysetup()
         self.timersetup()
         self.fire()
+        #jjcjcj
 
     def timersetup(self):
         self.timetriggercheck.timeout.connect(self.fire)
