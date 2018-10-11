@@ -95,11 +95,12 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             file = open(self.file, 'r')
             filetext = file.read()
             file.close()
-            matches = re.findall('A2=(\d+)', filetext)
-            if int(matches[-1]) > 0:
-                font = QFont("Arial Black", 16)
+            matchesx = re.findall('A2=(\w+)', filetext)
+            matches = int(matchesx[-1], 16)
+            if matches > 0:
+                font = QFont("Boulder", 14)
                 iconpixmap = QtGui.QPixmap("res/mail.png")
-                count = matches[-1]
+                count = str(matches)
                 pixmap = QPixmap(iconpixmap.width(), iconpixmap.height())
                 painter = QPainter()
                 pixmap.fill(Qt.transparent)
