@@ -4,11 +4,10 @@ import os
 import re
 import subprocess
 import sys
-import time
+
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
-from PyQt5.QtMultimedia import QSound
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon
 
 import tbtrayui
@@ -24,27 +23,22 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def __init__(self):
         super(self.__class__, self).__init__()
         os.system('thunderbird & disown')
-        time.sleep(5)
         os.chdir(os.path.dirname(sys.argv[0]))
-        self.sound = QSound("media/new_mail_notification.wav")
         self.file = "/home/greg/.thunderbird/tzvg3gbn.default/Mail/smart mailboxes/Inbox.msf"
         self.lastmtime = 0
         self.timetriggercheck = QTimer(self)
         self.tray_icon = QSystemTrayIcon(self)
         self.INTRAY = False
         self.winclass = 'thunderbird'
-        result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass],
-                                stdout=subprocess.PIPE)
-        self.windowid = result.stdout.decode('UTF-8')
+        self.windowid = 0
         self.setupUi(self)
         self.traysetup()
         self.timersetup()
         self.fire()
-        #jjcjcj
 
     def timersetup(self):
         self.timetriggercheck.timeout.connect(self.fire)
-        self.timetriggercheck.start(1000)
+        self.timetriggercheck.start(2000)
 
     def traysetup(self):
         self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
@@ -81,7 +75,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         else:
             subprocess.run(["xdotool", "windowmap", self.windowid])
             self.INTRAY = False
-        self.timetriggercheck.start(1000)
+        self.timetriggercheck.start(2000)
 
     def fire(self):
         self.timetriggercheck.stop()
@@ -89,11 +83,12 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass],
                                     stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
-            if not stdout:
+            if not stdout and self.windowid:
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
-                print('minimize')
+            else:
+                self.windowid = result.stdout.decode('UTF-8')
 
         if os.path.getmtime(self.file) > self.lastmtime:
             self.lastmtime = os.path.getmtime(self.file)
@@ -121,7 +116,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.tray_icon.setIcon(QtGui.QIcon(pixmap))
             else:
                 self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
-        self.timetriggercheck.start(1000)
+        self.timetriggercheck.start(2000)
         return
 
 
