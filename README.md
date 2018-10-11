@@ -5,3 +5,5 @@ Its not really meant for anyone else to use but iv got nothing against people us
 worst coder :P
 
 <b>you will need xdotool installed<b>
+
+All you need to do is run tbtray.py
