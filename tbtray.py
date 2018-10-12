@@ -35,8 +35,8 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         config = configparser.ConfigParser()
         config.read('settings.ini')
         self.profilepath = (config['DEFAULT']['profilepath'])
-        self.timersetup()
         self.testforprofile()
+        self.timersetup()
         # self.fire()
 
     def testforprofile(self):
