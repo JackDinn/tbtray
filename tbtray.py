@@ -103,6 +103,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         else:
             subprocess.run(["xdotool", "windowmap", self.windowid])
             subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'remove,skip_taskbar'])
+            subprocess.run(["xdotool", "windowactivate", self.windowid])
             self.INTRAY = False
         self.timetriggercheck.start(1000)
 
