@@ -39,6 +39,25 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timersetup()
         # self.fire()
 
+    def actionsetup(self):
+        self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
+        action_hideshow = QAction("Hide/Show", self)
+        action_settings = QAction("Settings", self)
+        action = QAction("Exit", self)
+        action.triggered.connect(close)
+        action_hideshow.triggered.connect(self.iconclick)
+        action_settings.triggered.connect(self.settings)
+        self.tray_icon.activated.connect(self.iconclick)
+        tray_menu = QMenu()
+        tray_menu.addAction(action_hideshow)
+        tray_menu.addAction(action_settings)
+        tray_menu.addAction(action)
+        self.tray_icon.setContextMenu(tray_menu)
+        self.pushButton_cancel.clicked.connect(self.cancel)
+        self.pushButton_ok.clicked.connect(self.ok)
+        self.toolButton_profilepath.clicked.connect(self.selectfile)
+        self.tray_icon.show()
+
     def testforprofile(self):
         try:
             open(self.profilepath, 'r')
@@ -51,22 +70,6 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def timersetup(self):
         self.timetriggercheck.timeout.connect(self.fire)
         self.timetriggercheck.start(2000)
-
-    def actionsetup(self):
-        self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
-        action_settings = QAction("Settings", self)
-        action = QAction("Exit", self)
-        action.triggered.connect(close)
-        action_settings.triggered.connect(self.settings)
-        self.tray_icon.activated.connect(self.iconclick)
-        tray_menu = QMenu()
-        tray_menu.addAction(action_settings)
-        tray_menu.addAction(action)
-        self.tray_icon.setContextMenu(tray_menu)
-        self.pushButton_cancel.clicked.connect(self.cancel)
-        self.pushButton_ok.clicked.connect(self.ok)
-        self.toolButton_profilepath.clicked.connect(self.selectfile)
-        self.tray_icon.show()
 
     def selectfile(self):
         self.editline_profilepath.setText(QFileDialog.getOpenFileName()[0])
