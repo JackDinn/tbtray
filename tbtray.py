@@ -37,7 +37,6 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.profilepath = (config['DEFAULT']['profilepath'])
         self.testforprofile()
         self.timersetup()
-        # self.fire()
 
     def actionsetup(self):
         self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
@@ -58,10 +57,10 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_profilepath.clicked.connect(self.selectfile)
         self.tray_icon.show()
 
-
     def testforprofile(self):
         try:
-            open(self.profilepath, 'r')
+            vv = open(self.profilepath, 'r')
+            vv.close()
         except (IsADirectoryError, FileNotFoundError):
             self.profilepath = "Please input path to unified Inbox.msf"
             self.editline_profilepath.setText("Please input path to unified Inbox.msf")
@@ -70,7 +69,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def timersetup(self):
         self.timetriggercheck.timeout.connect(self.fire)
-        self.timetriggercheck.start(2000)
+        self.timetriggercheck.start(1000)
 
     def selectfile(self):
         self.editline_profilepath.setText(QFileDialog.getOpenFileName()[0])
@@ -85,6 +84,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         config['DEFAULT'] = {'profilepath': self.profilepath}
         with open('settings.ini', 'w') as configfile:
             config.write(configfile)
+            configfile.close()
         self.testforprofile()
         self.hide()
 
@@ -102,8 +102,9 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.INTRAY = True
         else:
             subprocess.run(["xdotool", "windowmap", self.windowid])
+            subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'remove,skip_taskbar'])
             self.INTRAY = False
-        self.timetriggercheck.start(2000)
+        self.timetriggercheck.start(1000)
 
     def fire(self):
         if self.profilepath == "Please input path to unified Inbox.msf":
@@ -116,8 +117,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                                     stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
             if not stdout and self.windowid:
-                subprocess.run(["xdotool", "windowactivate", self.windowid])
-                subprocess.run(["xdotool", "windowunmap", self.windowid])
+                subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
             else:
                 self.windowid = result.stdout.decode('UTF-8')
@@ -148,7 +148,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                     self.tray_icon.setIcon(QtGui.QIcon(pixmap))
                 else:
                     self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
-            self.timetriggercheck.start(2000)
+            self.timetriggercheck.start(1000)
             return
 
 
