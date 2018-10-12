@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(708, 617)
+        Form.resize(713, 622)
         icon = QtGui.QIcon.fromTheme("thunderbird")
         Form.setWindowIcon(icon)
         Form.setLayoutDirection(QtCore.Qt.LeftToRight)

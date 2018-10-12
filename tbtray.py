@@ -58,6 +58,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_profilepath.clicked.connect(self.selectfile)
         self.tray_icon.show()
 
+
     def testforprofile(self):
         try:
             open(self.profilepath, 'r')
