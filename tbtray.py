@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import configparser
+import getpass
 import os
 import re
 import subprocess
@@ -24,6 +25,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         super(self.__class__, self).__init__()
         os.system('thunderbird & disown')
         os.chdir(os.path.dirname(sys.argv[0]))
+        self.matches = 0
         self.lastmtime = 0
         self.timetriggercheck = QTimer(self)
         self.tray_icon = QSystemTrayIcon(self)
@@ -31,19 +33,26 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.winclass = 'thunderbird'
         self.windowid = 0
         self.setupUi(self)
-        self.actionsetup()
         self.profiles = []
+        self.defaulticon = self.lineedit_defulticon.text()
+        self.notifyicon = self.lineedit_notifyicon.text()
         config = configparser.ConfigParser()
         config.read('settings.ini')
-        self.profilepath = (config['DEFAULT']['profilepath'])
+        self.checkbox_showcount.setChecked(bool(int(config['ticks']['showcount'])))
+        self.checkbox_minimizetotray.setChecked(bool(int(config['ticks']['minimizetotray'])))
+        self.defaulticon = config['icons']['default']
+        self.lineedit_defulticon.setText(config['icons']['default'])
+        self.notifyicon = config['icons']['notify']
+        self.lineedit_notifyicon.setText(config['icons']['notify'])
         for value in config['profiles']:
             self.profiles.append(config['profiles'][str(value)])
-        # self.profiles = (config['DEFAULT']['profiles'])
+            self.listWidget.addItem(config['profiles'][str(value)])
+        self.actionsetup()
         self.testforprofile()
         self.timersetup()
 
     def actionsetup(self):
-        self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
+        self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
         action_hideshow = QAction("Hide/Show", self)
         action_settings = QAction("Settings", self)
         action = QAction("Exit", self)
@@ -61,8 +70,24 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_profilepath.clicked.connect(self.selectfile)
         self.pushButton_add.clicked.connect(self.func_pushbutton_add)
         self.pushButton_remove.clicked.connect(self.func_pushbutton_remove)
-
+        self.checkbox_minimizetotray.clicked.connect(self.func_minimizetotrayclicked)
+        self.toolButton_defaulticon.clicked.connect(self.func_defaulticon)
+        self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.tray_icon.show()
+
+    def func_defaulticon(self):
+        x = QFileDialog.getOpenFileName(self, 'Select Default Icon', '/home/' + getpass.getuser())[0]
+        if x:
+            self.lineedit_defulticon.setText()
+
+    def func_notifyicon(self):
+        x = QFileDialog.getOpenFileName(self, 'Select Notify Icon', '/home/' + getpass.getuser())[0]
+        if x:
+            self.lineedit_notifyicon.setText(x)
+
+    def func_minimizetotrayclicked(self):
+        if not self.checkbox_minimizetotray.isChecked():
+            subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'remove,skip_taskbar'])
 
     def func_pushbutton_add(self):
         self.listWidget.addItem(self.editline_profilepath.text())
@@ -71,106 +96,121 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.listWidget.takeItem(self.listWidget.currentRow())
 
     def testforprofile(self):
+        if not self.profiles:
+            self.editline_profilepath.setText("Please check your profile paths")
+            return
         try:
-            vv = open(self.profilepath, 'r')
-            vv.close()
+            for value in self.profiles:
+                vv = open(value, 'r')
+                vv.close()
+            self.lastmtime = 0
+            self.editline_profilepath.setText('Profiles look OK')
         except (IsADirectoryError, FileNotFoundError):
-            self.profilepath = "Please input path to unified Inbox.msf"
-            self.editline_profilepath.setText("Please input path to unified Inbox.msf")
-            self.show()
-            self.activateWindow()
+            self.editline_profilepath.setText("Please check your profile paths")
 
     def timersetup(self):
         self.timetriggercheck.timeout.connect(self.fire)
         self.timetriggercheck.start(1000)
 
     def selectfile(self):
-        self.editline_profilepath.setText(QFileDialog.getOpenFileName()[0])
+        x = QFileDialog.getOpenFileName(self, 'Select Profile .msf File', '/home/' + getpass.getuser() + '/.thunderbird/')[0]
+        if x:
+            self.editline_profilepath.setText()
 
     def cancel(self):
         self.testforprofile()
         self.hide()
 
     def ok(self):
-
         config = configparser.ConfigParser()
+        config['ticks'] = {}
+        config['ticks']['minimizetotray'] = str(int(self.checkbox_minimizetotray.isChecked()))
+        config['ticks']['showcount'] = str(int(self.checkbox_showcount.isChecked()))
+        config['icons'] = {}
+        config['icons']['default'] = self.lineedit_defulticon.text()
+        self.defaulticon = self.lineedit_defulticon.text()
+        config['icons']['notify'] = self.lineedit_notifyicon.text()
+        self.notifyicon = self.lineedit_notifyicon.text()
         config['profiles'] = {}
+        self.profiles.clear()
         for x in range(self.listWidget.count()):
             self.profiles.append(self.listWidget.item(x).text())
             config['profiles'][str(x)] = self.listWidget.item(x).text()
-
-        print(self.profiles)
-        self.profilepath = self.editline_profilepath.text()
-        config['DEFAULT']['profilepath'] = self.profilepath
         with open('settings.ini', 'w') as configfile:
             config.write(configfile)
             configfile.close()
         self.testforprofile()
+        self.fire()
         self.hide()
 
     def settings(self):
-        self.editline_profilepath.setText(self.profilepath)
         self.show()
 
     def iconclick(self):
-        self.timetriggercheck.stop()
-        result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass],
-                                stdout=subprocess.PIPE)
-        stdout = result.stdout.decode('UTF-8')
-        if stdout:
-            subprocess.run(["xdotool", "windowunmap", self.windowid])
-            self.INTRAY = True
-        else:
-            subprocess.run(["xdotool", "windowmap", self.windowid])
-            subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'remove,skip_taskbar'])
-            subprocess.run(["xdotool", "windowactivate", self.windowid])
-            self.INTRAY = False
-        self.timetriggercheck.start(1000)
+        if self.checkbox_minimizetotray.isChecked():
+            self.timetriggercheck.stop()
+            result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
+            stdout = result.stdout.decode('UTF-8')
+            if stdout:
+                subprocess.run(["xdotool", "windowunmap", self.windowid])
+                self.INTRAY = True
+            else:
+                subprocess.run(["xdotool", "windowmap", self.windowid])
+                subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'remove,skip_taskbar'])
+                subprocess.run(["xdotool", "windowactivate", self.windowid])
+                self.INTRAY = False
+            self.timetriggercheck.start(1000)
 
     def fire(self):
-        if self.profilepath == "Please input path to unified Inbox.msf":
+        if self.editline_profilepath.text() == "Please check your profile paths":
             self.show()
             self.activateWindow()
             return
         self.timetriggercheck.stop()
-        if not self.INTRAY:
-            result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass],
-                                    stdout=subprocess.PIPE)
+        if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
+            result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
             if not stdout and self.windowid:
                 subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
             else:
                 self.windowid = result.stdout.decode('UTF-8')
-            if os.path.getmtime(self.profilepath) > self.lastmtime:
-                self.lastmtime = os.path.getmtime(self.profilepath)
-                file = open(self.profilepath, 'r')
-                filetext = file.read()
-                file.close()
-                matchesx = re.findall('\^A2=(\w+)', filetext)
-                matches = int(matchesx[-1], 16)
-                if matches > 0:
-                    font = QFont("Boulder", 14)
-                    iconpixmap = QtGui.QPixmap("res/mail.png")
-                    count = str(matches)
-                    pixmap = QPixmap(iconpixmap.width(), iconpixmap.height())
-                    painter = QPainter()
-                    pixmap.fill(Qt.transparent)
-                    painter.begin(pixmap)
-                    painter.setFont(font)
-                    painter.setOpacity(0.3)
-                    painter.drawPixmap(iconpixmap.rect(), iconpixmap)
-                    painter.setOpacity(1.0)
-                    painter.setPen(QColor(255, 255, 255))
-                    fm = QFontMetrics(font)
-                    painter.drawText(int((pixmap.width() - fm.width(count)) / 2),
-                                     int((pixmap.height() - fm.height()) / 2 + fm.ascent() + 1), count)
-                    painter.end()
-                    self.tray_icon.setIcon(QtGui.QIcon(pixmap))
+        for profile in self.profiles:
+            if os.path.getmtime(profile) > self.lastmtime:
+                print('profile changed ! ' + profile)
+                self.lastmtime = os.path.getmtime(profile)
+                self.matches = 0
+                for profile2 in self.profiles:
+                    file = open(profile2, 'r')
+                    filetext = file.read()
+                    file.close()
+                    matchesx = re.findall('\^A2=(\w+)', filetext)
+                    if matchesx:
+                        self.matches += int(matchesx[-1], 16)
+                if self.matches > 0:
+                    if self.checkbox_showcount.isChecked():
+                        iconpixmap = QtGui.QPixmap(self.notifyicon)
+                        font = QFont("Boulder", 14)
+                        count = str(self.matches)
+                        pixmap = QPixmap(iconpixmap.width(), iconpixmap.height())
+                        painter = QPainter()
+                        pixmap.fill(Qt.transparent)
+                        painter.begin(pixmap)
+                        painter.setFont(font)
+                        painter.setOpacity(0.3)
+                        painter.drawPixmap(iconpixmap.rect(), iconpixmap)
+                        painter.setOpacity(1.0)
+                        painter.setPen(QColor(255, 255, 255))
+                        fm = QFontMetrics(font)
+                        painter.drawText(int((pixmap.width() - fm.width(count)) / 2), int((pixmap.height() - fm.height()) / 2 + fm.ascent() + 1), count)
+                        painter.end()
+                        self.tray_icon.setIcon(QtGui.QIcon(pixmap))
+                    else:
+                        self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
                 else:
-                    self.tray_icon.setIcon(QtGui.QIcon("res/thunderbird.png"))
-            self.timetriggercheck.start(1000)
-            return
+                    self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
+                break
+        self.timetriggercheck.start(1000)
 
 
 def main():
