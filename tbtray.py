@@ -120,6 +120,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def cancel(self):
         self.testforprofile()
         self.hide()
+        self.timetriggercheck.start(1000)
 
     def ok(self):
         config = configparser.ConfigParser()
@@ -142,8 +143,10 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.testforprofile()
         self.fire()
         self.hide()
+        self.timetriggercheck.start(1000)
 
     def settings(self):
+        self.timetriggercheck.stop()
         self.show()
 
     def iconclick(self):
@@ -165,6 +168,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         if self.editline_profilepath.text() == "Please check your profile paths":
             self.show()
             self.activateWindow()
+            self.timetriggercheck.stop()
             return
         self.timetriggercheck.stop()
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
