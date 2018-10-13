@@ -32,9 +32,13 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.windowid = 0
         self.setupUi(self)
         self.actionsetup()
+        self.profiles = []
         config = configparser.ConfigParser()
         config.read('settings.ini')
         self.profilepath = (config['DEFAULT']['profilepath'])
+        for value in config['profiles']:
+            self.profiles.append(config['profiles'][str(value)])
+        # self.profiles = (config['DEFAULT']['profiles'])
         self.testforprofile()
         self.timersetup()
 
@@ -55,7 +59,16 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.pushButton_cancel.clicked.connect(self.cancel)
         self.pushButton_ok.clicked.connect(self.ok)
         self.toolButton_profilepath.clicked.connect(self.selectfile)
+        self.pushButton_add.clicked.connect(self.func_pushbutton_add)
+        self.pushButton_remove.clicked.connect(self.func_pushbutton_remove)
+
         self.tray_icon.show()
+
+    def func_pushbutton_add(self):
+        self.listWidget.addItem(self.editline_profilepath.text())
+
+    def func_pushbutton_remove(self):
+        self.listWidget.takeItem(self.listWidget.currentRow())
 
     def testforprofile(self):
         try:
@@ -79,9 +92,16 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.hide()
 
     def ok(self):
-        self.profilepath = self.editline_profilepath.text()
+
         config = configparser.ConfigParser()
-        config['DEFAULT'] = {'profilepath': self.profilepath}
+        config['profiles'] = {}
+        for x in range(self.listWidget.count()):
+            self.profiles.append(self.listWidget.item(x).text())
+            config['profiles'][str(x)] = self.listWidget.item(x).text()
+
+        print(self.profiles)
+        self.profilepath = self.editline_profilepath.text()
+        config['DEFAULT']['profilepath'] = self.profilepath
         with open('settings.ini', 'w') as configfile:
             config.write(configfile)
             configfile.close()
