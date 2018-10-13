@@ -97,7 +97,6 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.listWidget.takeItem(self.listWidget.currentRow())
 
     def testforprofile(self):
-        print('test profile')
         if not self.profiles:
             self.editline_profilepath.setText("Please check your profile paths")
             self.badprofile = True
@@ -185,9 +184,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(1000)
 
     def fire(self):
-        print('fire')
         if self.badprofile:
-            print('bad profile in fire')
             self.show()
             self.activateWindow()
             self.tabWidget.setCurrentIndex(1)
@@ -203,7 +200,6 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.windowid = result.stdout.decode('UTF-8')
         for profile in self.profiles:
             if os.path.getmtime(profile) > self.lastmtime:
-                print('profile changed ! ' + profile)
                 self.lastmtime = os.path.getmtime(profile)
                 self.matches = 0
                 for profile2 in self.profiles:
