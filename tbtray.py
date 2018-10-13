@@ -78,7 +78,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def func_defaulticon(self):
         x = QFileDialog.getOpenFileName(self, 'Select Default Icon', '/home/' + getpass.getuser())[0]
         if x:
-            self.lineedit_defulticon.setText()
+            self.lineedit_defulticon.setText(x)
 
     def func_notifyicon(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Icon', '/home/' + getpass.getuser())[0]
@@ -115,7 +115,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def selectfile(self):
         x = QFileDialog.getOpenFileName(self, 'Select Profile .msf File', '/home/' + getpass.getuser() + '/.thunderbird/')[0]
         if x:
-            self.editline_profilepath.setText()
+            self.editline_profilepath.setText(x)
 
     def cancel(self):
         self.testforprofile()
