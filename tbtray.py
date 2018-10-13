@@ -34,6 +34,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.windowid = 0
         self.setupUi(self)
         self.profiles = []
+        self.badprofile = True
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         config = configparser.ConfigParser()
@@ -96,8 +97,10 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.listWidget.takeItem(self.listWidget.currentRow())
 
     def testforprofile(self):
+        print('test profile')
         if not self.profiles:
             self.editline_profilepath.setText("Please check your profile paths")
+            self.badprofile = True
             return
         try:
             for value in self.profiles:
@@ -105,7 +108,9 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 vv.close()
             self.lastmtime = 0
             self.editline_profilepath.setText('Profiles look OK')
+            self.badprofile = False
         except (IsADirectoryError, FileNotFoundError):
+            self.badprofile = True
             self.editline_profilepath.setText("Please check your profile paths")
 
     def timersetup(self):
@@ -150,7 +155,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.show()
 
     def iconclick(self):
-        if self.checkbox_minimizetotray.isChecked():
+        if self.checkbox_minimizetotray.isChecked() and not self.badprofile:
             self.timetriggercheck.stop()
             result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
@@ -165,6 +170,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(1000)
 
     def iconmenushowhide(self):
+        if not self.badprofile:
             self.timetriggercheck.stop()
             result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
@@ -179,10 +185,12 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(1000)
 
     def fire(self):
-        if self.editline_profilepath.text() == "Please check your profile paths":
+        print('fire')
+        if self.badprofile:
+            print('bad profile in fire')
             self.show()
             self.activateWindow()
-            self.timetriggercheck.stop()
+            self.tabWidget.setCurrentIndex(1)
             return
         self.timetriggercheck.stop()
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
