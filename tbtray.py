@@ -57,7 +57,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         action_settings = QAction("Settings", self)
         action = QAction("Exit", self)
         action.triggered.connect(close)
-        action_hideshow.triggered.connect(self.iconclick)
+        action_hideshow.triggered.connect(self.iconmenushowhide)
         action_settings.triggered.connect(self.settings)
         self.tray_icon.activated.connect(self.iconclick)
         tray_menu = QMenu()
@@ -87,7 +87,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def func_minimizetotrayclicked(self):
         if not self.checkbox_minimizetotray.isChecked():
-            subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'remove,skip_taskbar'])
+            subprocess.run(['wmctrl', '-r', 'Mozilla thunderbird', '-b', 'remove,skip_taskbar'])
 
     def func_pushbutton_add(self):
         self.listWidget.addItem(self.editline_profilepath.text())
@@ -159,7 +159,21 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.INTRAY = True
             else:
                 subprocess.run(["xdotool", "windowmap", self.windowid])
-                subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'remove,skip_taskbar'])
+                subprocess.run(['wmctrl', '-r', 'Mozilla Thunderbird', '-b', 'remove,skip_taskbar'])
+                subprocess.run(["xdotool", "windowactivate", self.windowid])
+                self.INTRAY = False
+            self.timetriggercheck.start(1000)
+
+    def iconmenushowhide(self):
+            self.timetriggercheck.stop()
+            result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
+            stdout = result.stdout.decode('UTF-8')
+            if stdout:
+                subprocess.run(["xdotool", "windowunmap", self.windowid])
+                self.INTRAY = True
+            else:
+                subprocess.run(["xdotool", "windowmap", self.windowid])
+                subprocess.run(['wmctrl', '-r', 'Mozilla thunderbird', '-b', 'remove,skip_taskbar'])
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
                 self.INTRAY = False
             self.timetriggercheck.start(1000)
@@ -175,7 +189,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
             if not stdout and self.windowid:
-                subprocess.run(['wmctrl', '-r', 'thunderbird', '-b', 'add,skip_taskbar'])
+                subprocess.run(['wmctrl', '-r', 'Mozilla thunderbird', '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
             else:
                 self.windowid = result.stdout.decode('UTF-8')
