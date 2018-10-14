@@ -23,7 +23,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-        os.system('thunderbird & disown')
+        os.system('thunderbird > /dev/null 2>&1 & disown')
         os.chdir(os.path.dirname(sys.argv[0]))
         self.matches = 0
         self.lastmtime = 0
