@@ -54,6 +54,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def actionsetup(self):
         self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
+        self.tray_icon.setToolTip('TB-Tray')
         action_hideshow = QAction("Hide/Show", self)
         action_settings = QAction("Settings", self)
         action = QAction("Exit", self)
@@ -212,9 +213,10 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 if self.matches > 0:
                     if self.checkbox_showcount.isChecked():
                         iconpixmap = QtGui.QPixmap(self.notifyicon)
-                        font = QFont("Boulder", 14)
                         count = str(self.matches)
                         pixmap = QPixmap(iconpixmap.width(), iconpixmap.height())
+                        fontsize = self.findfontsize(count, pixmap)
+                        font = QFont("Arial", fontsize)
                         painter = QPainter()
                         pixmap.fill(Qt.transparent)
                         painter.begin(pixmap)
@@ -233,6 +235,16 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                     self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
                 break
         self.timetriggercheck.start(1000)
+
+    @staticmethod
+    def findfontsize(text, pixmap):
+        x = 4
+        for x in range(4, 200):
+            font = QFont("Arial", x)
+            fm = QFontMetrics(font)
+            if fm.width(text) > pixmap.width() or fm.height() > pixmap.height():
+                break
+        return x
 
 
 def main():
