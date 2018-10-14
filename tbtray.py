@@ -9,7 +9,7 @@ import sys
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
-from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog
+from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
 
 import tbtrayui
 
@@ -35,10 +35,13 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.setupUi(self)
         self.profiles = []
         self.badprofile = True
+        self.colour_pre = ''
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         config = configparser.ConfigParser()
         config.read('settings.ini')
+        self.colour = config['icons']['colour']
+        self.label_colour.setStyleSheet('color: ' + self.colour)
         self.checkbox_showcount.setChecked(bool(int(config['ticks']['showcount'])))
         self.checkbox_minimizetotray.setChecked(bool(int(config['ticks']['minimizetotray'])))
         self.defaulticon = config['icons']['default']
@@ -75,7 +78,14 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.checkbox_minimizetotray.clicked.connect(self.func_minimizetotrayclicked)
         self.toolButton_defaulticon.clicked.connect(self.func_defaulticon)
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
+        self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
+
+    def func_colourpicker(self):
+        x = QColorDialog.getColor()
+        if x:
+            self.label_colour.setStyleSheet('color: ' + x.name())
+            self.colour_pre = x.name()
 
     def func_defaulticon(self):
         x = QFileDialog.getOpenFileName(self, 'Select Default Icon', '/home/' + getpass.getuser())[0]
@@ -125,6 +135,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def cancel(self):
         self.testforprofile()
         self.hide()
+        self.label_colour.setStyleSheet('color: ' + self.colour)
         self.timetriggercheck.start(1000)
 
     def ok(self):
@@ -137,6 +148,8 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.defaulticon = self.lineedit_defulticon.text()
         config['icons']['notify'] = self.lineedit_notifyicon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
+        self.colour = self.colour_pre
+        config['icons']['colour'] = self.colour
         config['profiles'] = {}
         self.profiles.clear()
         for x in range(self.listWidget.count()):
@@ -224,7 +237,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         painter.setOpacity(0.3)
                         painter.drawPixmap(iconpixmap.rect(), iconpixmap)
                         painter.setOpacity(1.0)
-                        painter.setPen(QColor(255, 255, 255))
+                        painter.setPen(QColor(self.colour))
                         fm = QFontMetrics(font)
                         painter.drawText(int((pixmap.width() - fm.width(count)) / 2), int((pixmap.height() - fm.height()) / 2 + fm.ascent() + 1), count)
                         painter.end()
