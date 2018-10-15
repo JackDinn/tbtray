@@ -336,7 +336,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         self.tray_icon.setIcon(QtGui.QIcon(pixmap))
                     else:
                         self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
-                    self.popup.fire(3)
+                    self.popup.fire(self.matches)
 
                 else:
                     self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
