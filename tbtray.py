@@ -9,8 +9,10 @@ import sys
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
+from PyQt5.QtMultimedia import QSound
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
 
+import popup
 import tbtrayui
 
 
@@ -19,12 +21,97 @@ def close():
     sys.exit(0)
 
 
-class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
+def readmessage(count=1):
+    from_text = []
+    file = open('/home/greg/.thunderbird/tzvg3gbn.default/ImapMail/jackdinn.co.uk.mail.aa.net-1.uk/INBOX', encoding="utf8", errors='ignore')
+    text = file.read()
+    file.close()
+    fromx = re.findall('From: (.*@.*)', text)[(0 - count):]
+    subject = re.findall('Subject: (.*)', text)[-20:]
+    date = re.findall('Date: (.*)', text)[0-count:]
+    messageid = re.findall('Message-ID: (.*)', text)[0-count:]
+    
+    if not messageid:
+        messageid_text = ['Empty']
+    else:
+        messageid_text = messageid
+    if not date:
+        date_text = ['Empty']
+    else:
+        date_text = date
+    if not fromx:
+        from_text = ['Empty']
+    else:
+        for x in fromx:
+            xx = str(x).replace('<', '"')
+            xx = str(xx).replace('>', '"')
+            from_text.append(xx)
+    if not subject:
+        subject_text = ['Empty']
+    else:
+        subject_text = list(filter(None, subject))
+        subject_text = subject_text[(0 - count):]
+    return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
+
+
+class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-        os.system('thunderbird > /dev/null 2>&1 & disown')
+        self.setupUi(self)
+        self.sound = QSound("res/popup.wav")
+        self.popup_timer = QTimer(self)
+        self.popup_timer.setSingleShot(True)
+        self.popup_timer.timeout.connect(self.timer)
+        self.pushButton.clicked.connect(self.clicked)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.X11BypassWindowManagerHint)
+        self.setWindowOpacity(0.80)
+        self.setGeometry(1615, 60, 300, 320)
+        self.shownmessages = []
+        # self.fire()
+
+    def fire(self, count=1):
+        mailinfo = readmessage(count)
+        self.textBrowser.clear()
+        up = 0
+        for mc in range(len(mailinfo['messageid'])):
+            if self.shownmessages.__contains__(mailinfo['messageid'][up]):
+                mailinfo['from'].pop(up)
+                mailinfo['subject'].pop(up)
+                mailinfo['date'].pop(up)
+                mailinfo['messageid'].pop(up)
+                count -= 1
+            else: up += 1
+        for x in range(count):
+            self.textBrowser.append('<h3 style="color: green"><center>' + mailinfo['from'][x-1] + '</center></h3><p>'
+                                    + mailinfo['subject'][x-1])
+        print('count ' + str(count))
+        for fr in mailinfo['messageid']:
+            self.shownmessages.append(fr)
+        print('mailinfo ' + str(len(mailinfo['messageid'])))
+        if len(mailinfo['messageid']) > 0:
+            self.setGeometry(1615, 60, 300, 100*count)
+            self.popup_timer.start(6000)
+            # self.textBrowser.mouseDoubleClickEvent(self.click())
+            self.show()
+            self.sound.play()
+
+    def timer(self):
+        self.hide()
+        # sys.exit(0)
+
+    def clicked(self):
+        self.hide()
+
+
+class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+        # os.system('thunderbird > /dev/null 2>&1 & disown')
         os.chdir(os.path.dirname(sys.argv[0]))
+        self.popup = Popup()
         self.matches = 0
         self.lastmtime = 0
         self.timetriggercheck = QTimer(self)
@@ -79,7 +166,12 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_defaulticon.clicked.connect(self.func_defaulticon)
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
+        self.popup.pushButton.clicked.connect(self.iconclick)
         self.tray_icon.show()
+        # self.tray_icon.showMessage('Title', 'message here')
+        print(self.tray_icon.geometry().width())
+        print(self.tray_icon.geometry().height())
+        # self.popup.show()
 
     def func_colourpicker(self):
         x = QColorDialog.getColor()
@@ -244,6 +336,8 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         self.tray_icon.setIcon(QtGui.QIcon(pixmap))
                     else:
                         self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
+                    self.popup.fire(3)
+
                 else:
                     self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
                 break
@@ -262,7 +356,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    ui = ExampleApp()
+    ui = MainApp()
     ui.hide()
     sys.exit(app.exec_())
 
