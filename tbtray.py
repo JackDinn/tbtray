@@ -185,7 +185,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
-        self.popup.fire(self.profiles, 10, False)
+        self.popup.fire(self.profiles, 10, True)
 
     def func_toolbutton_notifysound(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Sound File', '/home/' + getpass.getuser())[0]
