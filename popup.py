@@ -16,18 +16,10 @@ class Ui_formpopup(object):
         formpopup.setStatusTip("")
         self.verticalLayout = QtWidgets.QVBoxLayout(formpopup)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.textBrowser = QtWidgets.QTextBrowser(formpopup)
-        self.textBrowser.setObjectName("textBrowser")
-        self.verticalLayout.addWidget(self.textBrowser)
-        self.pushButton = QtWidgets.QPushButton(formpopup)
-        self.pushButton.setObjectName("pushButton")
-        self.verticalLayout.addWidget(self.pushButton)
-
         self.retranslateUi(formpopup)
         QtCore.QMetaObject.connectSlotsByName(formpopup)
 
     def retranslateUi(self, formpopup):
         _translate = QtCore.QCoreApplication.translate
         formpopup.setWindowTitle(_translate("formpopup", "Form"))
-        self.pushButton.setText(_translate("formpopup", "PushButton"))
 

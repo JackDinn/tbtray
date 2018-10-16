@@ -27,9 +27,12 @@
     <widget class="QTextBrowser" name="textBrowser"/>
    </item>
    <item>
-    <widget class="QPushButton" name="pushButton">
+    <widget class="QPushButton" name="pushButton_popup">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="text">
-      <string>PushButton</string>
+      <string>Show ThunderBird</string>
      </property>
     </widget>
    </item>

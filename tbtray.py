@@ -47,17 +47,31 @@ def readmessage(path, count=1):
     return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
 
 
+class TextBrowser(QtWidgets.QTextBrowser):
+    def __init__(self, parent=None):
+        super(TextBrowser, self).__init__(parent)
+        self.windowid = 0
+        self.INTRAY = False
+
+    def mouseReleaseEvent(self, event):
+        subprocess.run(["xdotool", "windowmap", self.windowid])
+        subprocess.run(['wmctrl', '-r', 'Mozilla Thunderbird', '-b', 'remove,skip_taskbar'])
+        subprocess.run(["xdotool", "windowactivate", self.windowid])
+        self.INTRAY = True
+
+
 class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
 
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
+        self.textBrowser = TextBrowser()
+        self.verticalLayout.addWidget(self.textBrowser)
         self.sound = QSound("res/popup.wav")
         self.popuppaths = ['/home/greg/.thunderbird/tzvg3gbn.default/ImapMail/jackdinn.co.uk.mail.aa.net-1.uk/INBOX']
         self.popup_timer = QTimer(self)
         self.popup_timer.setSingleShot(True)
         self.popup_timer.timeout.connect(self.timer)
-        self.pushButton.clicked.connect(self.clicked)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowFlags(Qt.X11BypassWindowManagerHint)
         self.setWindowOpacity(0.90)
@@ -70,7 +84,6 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
         for ss in range(len(profiles)):
             popprofiles.append(profiles[ss].replace('INBOX.msf', 'INBOX'))
             if os.path.isfile(popprofiles[ss]): fileexists = True
-
         if fileexists:
             mailinfo = readmessage(popprofiles, count)
             up = 0
@@ -80,15 +93,13 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
                     mailinfo['subject'].pop(up)
                     mailinfo['date'].pop(up)
                     mailinfo['messageid'].pop(up)
-                else:
-                    up += 1
-            for fr in mailinfo['messageid']:
-                self.shownmessages.append(fr)
+                else: up += 1
+            for fr in mailinfo['messageid']: self.shownmessages.append(fr)
             if not firstrun and len(mailinfo['messageid']) > 0:
                 self.textBrowser.clear()
                 for x in range(len(mailinfo['messageid'])):
-                    self.textBrowser.append('<h3 style="color: green"><center>' + mailinfo['from'][x-1] + '</center></h3><p>' + mailinfo['subject'][x-1])
-                self.setGeometry(1615, 60, 300, 120*len(mailinfo['messageid']))
+                    self.textBrowser.append('<h3 style="color: green"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + mailinfo['subject'][x - 1])
+                self.setGeometry(1615, 60, 300, 130*len(mailinfo['messageid']))
                 self.popup_timer.start(10000)
                 self.show()
                 self.sound.play()
@@ -161,9 +172,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_defaulticon.clicked.connect(self.func_defaulticon)
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
-        self.popup.pushButton.clicked.connect(self.iconclick)
         self.tray_icon.show()
-        self.popup.fire(self.profiles, 10, True)
+        self.popup.fire(self.profiles, 10, False)
 
     def func_colourpicker(self):
         x = QColorDialog.getColor()
@@ -173,13 +183,11 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def func_defaulticon(self):
         x = QFileDialog.getOpenFileName(self, 'Select Default Icon', '/home/' + getpass.getuser())[0]
-        if x:
-            self.lineedit_defulticon.setText(x)
+        if x: self.lineedit_defulticon.setText(x)
 
     def func_notifyicon(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Icon', '/home/' + getpass.getuser())[0]
-        if x:
-            self.lineedit_notifyicon.setText(x)
+        if x: self.lineedit_notifyicon.setText(x)
 
     def func_minimizetotrayclicked(self):
         if not self.checkbox_minimizetotray.isChecked():
@@ -213,8 +221,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def selectfile(self):
         x = QFileDialog.getOpenFileName(self, 'Select Profile .msf File', '/home/' + getpass.getuser() + '/.thunderbird/')[0]
-        if x:
-            self.editline_profilepath.setText(x)
+        if x: self.editline_profilepath.setText(x)
 
     def cancel(self):
         self.testforprofile()
@@ -288,6 +295,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.tabWidget.setCurrentIndex(1)
             return
         self.timetriggercheck.stop()
+        if self.popup.textBrowser.INTRAY:
+            self.INTRAY = False
+            self.popup.textBrowser.INTRAY = False
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
             result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
@@ -296,6 +306,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.INTRAY = True
             else:
                 self.windowid = result.stdout.decode('UTF-8')
+                self.popup.textBrowser.windowid = self.windowid
         for profile in self.profiles:
             if os.path.getmtime(profile) > self.lastmtime:
                 self.lastmtime = os.path.getmtime(profile)
@@ -328,12 +339,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         painter.drawText(int((pixmap.width() - fm.width(count)) / 2), int((pixmap.height() - fm.height()) / 2 + fm.ascent() + 1), count)
                         painter.end()
                         self.tray_icon.setIcon(QtGui.QIcon(pixmap))
-                    else:
-                        self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
+                    else: self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
                     if not self.badprofile: self.popup.fire(self.profiles, self.matches)
-
-                else:
-                    self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
+                else: self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
                 break
         self.timetriggercheck.start(1000)
 
