@@ -27,7 +27,7 @@ example INBOX.msf :-
 /home/greg/.thunderbird/tzvg3gbn.default/ImapMail/imap.gmail.com/INBOX.msf
 
 
-####Features :-
+#### Features :-
 
 * Minimize to tray
 * Click tray icon to show/hide TB
