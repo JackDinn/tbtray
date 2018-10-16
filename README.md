@@ -1,9 +1,9 @@
 # tbtray
 A thunderbird tray addon for linux (best on KDE).
 
-I only built it because we didn't have a TB tray integration and i was 
-bored, but others can feel free to use it. Keep in mind im probably the worlds
-worst coder. I'm doing this to try and learn a little about using git and github.
+I only built it because we did'nt have any TB tray integration and i was also 
+bored, but others can feel free to use it. Keep in mind im just a hobbyist. I'm doing this to try and
+ learn a little about using git and github.
 
 **you will need xdotool & wmctrl installed and Its a PyQt5 project**
 
@@ -18,9 +18,9 @@ You might need to first remove any paths listed in the main profile box (select 
 then find (or manually enter) the path to your Inbox.msf files in the top bar and click "add" to put them
 into your profile list box.
 
-You can not use the unified inbox.
+#### **_You can not use the unified (Smart-mail) inbox._**
 
-If you have any trouble i suggest just deleting the tbtray folder and them cloning it again (mainly after an update).
+If you have any trouble i suggest just deleting the tbtray folder and then cloning it again (mainly after an update).
 
 
 example INBOX.msf :-
