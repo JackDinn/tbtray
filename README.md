@@ -2,7 +2,7 @@
 A thunderbird tray addon for linux (best on KDE).
 
 I only built it because we didn't have a TB tray integration and i was 
-board but others can feel free to use it. Keep in mind im probably the worlds
+bored, but others can feel free to use it. Keep in mind im probably the worlds
 worst coder. I'm doing this to try and learn a little about using git and github.
 
 **you will need xdotool & wmctrl installed and Its a PyQt5 project**
