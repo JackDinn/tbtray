@@ -21,36 +21,29 @@ def close():
     sys.exit(0)
 
 
-def readmessage(count=1):
+def readmessage(path, count=1):
     from_text = []
-    file = open('/home/greg/.thunderbird/tzvg3gbn.default/ImapMail/jackdinn.co.uk.mail.aa.net-1.uk/INBOX', encoding="utf8", errors='ignore')
-    text = file.read()
-    file.close()
-    fromx = re.findall('From: (.*@.*)', text)[(0 - count):]
-    subject = re.findall('Subject: (.*)', text)[-20:]
-    date = re.findall('Date: (.*)', text)[0-count:]
-    messageid = re.findall('Message-ID: (.*)', text)[0-count:]
-    
-    if not messageid:
-        messageid_text = ['Empty']
-    else:
-        messageid_text = messageid
-    if not date:
-        date_text = ['Empty']
-    else:
-        date_text = date
-    if not fromx:
-        from_text = ['Empty']
-    else:
+    subject_text = []
+    date_text = []
+    messageid_text = []
+    for gg in path:
+        if not os.path.isfile(gg): continue
+        tex = subprocess.run(["tail", "-n", "8000", gg], stdout=subprocess.PIPE)
+        text = tex.stdout.decode('UTF-8')
+        fromx = re.findall('\\r\\nFrom: (.*@.*)\\r\\n', text)[(0 - count):]
+        subject = re.findall('\\r\\nSubject: (.*)\\r\\n', text)[0 - count:]
+        date = re.findall('\\r\\nDate: (.*)\\r\\n', text)[0-count:]
+        messageid = re.findall('\\r\\nMessage-I[Dd]: (.*)\\r\\n', text)[0-count:]
+        for q in messageid:
+            messageid_text.append(q)
+        for w in date:
+            date_text.append(w)
         for x in fromx:
             xx = str(x).replace('<', '"')
             xx = str(xx).replace('>', '"')
             from_text.append(xx)
-    if not subject:
-        subject_text = ['Empty']
-    else:
-        subject_text = list(filter(None, subject))
-        subject_text = subject_text[(0 - count):]
+        for tt in subject:
+            subject_text.append(tt)
     return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
 
 
@@ -60,46 +53,48 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
         super(self.__class__, self).__init__()
         self.setupUi(self)
         self.sound = QSound("res/popup.wav")
+        self.popuppaths = ['/home/greg/.thunderbird/tzvg3gbn.default/ImapMail/jackdinn.co.uk.mail.aa.net-1.uk/INBOX']
         self.popup_timer = QTimer(self)
         self.popup_timer.setSingleShot(True)
         self.popup_timer.timeout.connect(self.timer)
         self.pushButton.clicked.connect(self.clicked)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowFlags(Qt.X11BypassWindowManagerHint)
-        self.setWindowOpacity(0.80)
+        self.setWindowOpacity(0.90)
         self.setGeometry(1615, 60, 300, 320)
         self.shownmessages = []
-        # self.fire()
 
-    def fire(self, count=1):
-        mailinfo = readmessage(count)
-        self.textBrowser.clear()
-        up = 0
-        for mc in range(len(mailinfo['messageid'])):
-            if self.shownmessages.__contains__(mailinfo['messageid'][up]):
-                mailinfo['from'].pop(up)
-                mailinfo['subject'].pop(up)
-                mailinfo['date'].pop(up)
-                mailinfo['messageid'].pop(up)
-                count -= 1
-            else: up += 1
-        for x in range(count):
-            self.textBrowser.append('<h3 style="color: green"><center>' + mailinfo['from'][x-1] + '</center></h3><p>'
-                                    + mailinfo['subject'][x-1])
-        print('count ' + str(count))
-        for fr in mailinfo['messageid']:
-            self.shownmessages.append(fr)
-        print('mailinfo ' + str(len(mailinfo['messageid'])))
-        if len(mailinfo['messageid']) > 0:
-            self.setGeometry(1615, 60, 300, 100*count)
-            self.popup_timer.start(6000)
-            # self.textBrowser.mouseDoubleClickEvent(self.click())
-            self.show()
-            self.sound.play()
+    def fire(self, profiles, count=1, firstrun=False):
+        popprofiles = []
+        fileexists = False
+        for ss in range(len(profiles)):
+            popprofiles.append(profiles[ss].replace('INBOX.msf', 'INBOX'))
+            if os.path.isfile(popprofiles[ss]): fileexists = True
+
+        if fileexists:
+            mailinfo = readmessage(popprofiles, count)
+            up = 0
+            for mc in range(len(mailinfo['messageid'])):
+                if self.shownmessages.__contains__(mailinfo['messageid'][up]):
+                    mailinfo['from'].pop(up)
+                    mailinfo['subject'].pop(up)
+                    mailinfo['date'].pop(up)
+                    mailinfo['messageid'].pop(up)
+                else:
+                    up += 1
+            for fr in mailinfo['messageid']:
+                self.shownmessages.append(fr)
+            if not firstrun and len(mailinfo['messageid']) > 0:
+                self.textBrowser.clear()
+                for x in range(len(mailinfo['messageid'])):
+                    self.textBrowser.append('<h3 style="color: green"><center>' + mailinfo['from'][x-1] + '</center></h3><p>' + mailinfo['subject'][x-1])
+                self.setGeometry(1615, 60, 300, 120*len(mailinfo['messageid']))
+                self.popup_timer.start(10000)
+                self.show()
+                self.sound.play()
 
     def timer(self):
         self.hide()
-        # sys.exit(0)
 
     def clicked(self):
         self.hide()
@@ -109,9 +104,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-        # os.system('thunderbird > /dev/null 2>&1 & disown')
+        os.system('thunderbird > /dev/null 2>&1 & disown')
         os.chdir(os.path.dirname(sys.argv[0]))
-        self.popup = Popup()
         self.matches = 0
         self.lastmtime = 0
         self.timetriggercheck = QTimer(self)
@@ -138,8 +132,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         for value in config['profiles']:
             self.profiles.append(config['profiles'][str(value)])
             self.listWidget.addItem(config['profiles'][str(value)])
-        self.actionsetup()
         self.testforprofile()
+        self.popup = Popup()
+        self.actionsetup()
         self.timersetup()
 
     def actionsetup(self):
@@ -168,10 +163,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.popup.pushButton.clicked.connect(self.iconclick)
         self.tray_icon.show()
-        # self.tray_icon.showMessage('Title', 'message here')
-        print(self.tray_icon.geometry().width())
-        print(self.tray_icon.geometry().height())
-        # self.popup.show()
+        self.popup.fire(self.profiles, 10, True)
 
     def func_colourpicker(self):
         x = QColorDialog.getColor()
@@ -307,6 +299,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         for profile in self.profiles:
             if os.path.getmtime(profile) > self.lastmtime:
                 self.lastmtime = os.path.getmtime(profile)
+                print('lasttime' + str(self.lastmtime))
                 self.matches = 0
                 for profile2 in self.profiles:
                     file = open(profile2, 'r')
@@ -315,6 +308,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                     matchesx = re.findall('\^A2=(\w+)', filetext)
                     if matchesx:
                         self.matches += int(matchesx[-1], 16)
+                        print('matches' + str(self.matches))
                 if self.matches > 0:
                     if self.checkbox_showcount.isChecked():
                         iconpixmap = QtGui.QPixmap(self.notifyicon)
@@ -336,7 +330,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         self.tray_icon.setIcon(QtGui.QIcon(pixmap))
                     else:
                         self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
-                    self.popup.fire(self.matches)
+                    if not self.badprofile: self.popup.fire(self.profiles, self.matches)
 
                 else:
                     self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
