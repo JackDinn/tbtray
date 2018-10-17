@@ -9,8 +9,10 @@ import sys
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
+from PyQt5.QtMultimedia import QSound
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
 
+import popup
 import tbtrayui
 
 
@@ -19,7 +21,99 @@ def close():
     sys.exit(0)
 
 
-class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
+def readmessage(path, count=1):
+    from_text = []
+    subject_text = []
+    date_text = []
+    messageid_text = []
+    for gg in path:
+        if not os.path.isfile(gg): continue
+        tex = subprocess.run(["tail", "-n", "8000", gg], stdout=subprocess.PIPE)
+        text = tex.stdout.decode('UTF-8')
+        fromx = re.findall('\\r\\nFrom: (.*@.*)\\r\\n', text)[(0 - count):]
+        subject = re.findall('\\r\\nSubject: (.*)\\r\\n', text)[0 - count:]
+        date = re.findall('\\r\\nDate: (.*)\\r\\n', text)[0-count:]
+        messageid = re.findall('\\r\\nMessage-I[Dd]: (.*)\\r\\n', text)[0-count:]
+        for q in messageid:
+            messageid_text.append(q)
+        for w in date:
+            date_text.append(w)
+        for x in fromx:
+            xx = str(x).replace('<', '"')
+            xx = str(xx).replace('>', '"')
+            from_text.append(xx)
+        for tt in subject:
+            subject_text.append(tt)
+    return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
+
+
+class TextBrowser(QtWidgets.QTextBrowser):
+    def __init__(self, parent=None):
+        super(TextBrowser, self).__init__(parent)
+        self.windowid = 0
+        self.INTRAY = False
+
+    def mouseReleaseEvent(self, event):
+        subprocess.run(["xdotool", "windowmap", self.windowid])
+        subprocess.run(['wmctrl', '-r', 'Mozilla Thunderbird', '-b', 'remove,skip_taskbar'])
+        subprocess.run(["xdotool", "windowactivate", self.windowid])
+        self.INTRAY = True
+
+
+class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+        self.setupUi(self)
+        self.textBrowser = TextBrowser()
+        self.verticalLayout.addWidget(self.textBrowser)
+        self.popupon = True
+        self.sound = QSound("res/popup.wav")
+        self.soundon = True
+        self.popup_timer = QTimer(self)
+        self.popup_timer.setSingleShot(True)
+        self.popup_timer.timeout.connect(self.timer)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.X11BypassWindowManagerHint)
+        self.setWindowOpacity(0.90)
+        self.xpos = 1585
+        self.shownmessages = []
+
+    def fire(self, profiles, count=1, firstrun=False):
+        if self.popupon or self.sound:
+            popprofiles = []
+            fileexists = False
+            for ss in range(len(profiles)):
+                popprofiles.append(profiles[ss].replace('INBOX.msf', 'INBOX'))
+                if os.path.isfile(popprofiles[ss]): fileexists = True
+            if fileexists:
+                mailinfo = readmessage(popprofiles, count)
+                up = 0
+                for mc in range(len(mailinfo['messageid'])):
+                    if self.shownmessages.__contains__(mailinfo['messageid'][up]):
+                        mailinfo['from'].pop(up)
+                        mailinfo['subject'].pop(up)
+                        mailinfo['date'].pop(up)
+                        mailinfo['messageid'].pop(up)
+                    else: up += 1
+                for fr in mailinfo['messageid']: self.shownmessages.append(fr)
+                if not firstrun and len(mailinfo['messageid']) > 0:
+                    self.textBrowser.clear()
+                    for x in range(len(mailinfo['messageid'])):
+                        self.textBrowser.append('<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + mailinfo['subject'][x - 1])
+                    self.setGeometry(self.xpos, 40, 330, 130*len(mailinfo['messageid']))
+                    self.popup_timer.start(10000)
+                    if self.popupon: self.show()
+                    if self.soundon: self.sound.play()
+
+    def timer(self):
+        self.hide()
+
+    def clicked(self):
+        self.hide()
+
+
+class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -35,12 +129,16 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.setupUi(self)
         self.profiles = []
         self.badprofile = True
-        self.colour_pre = ''
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         config = configparser.ConfigParser()
         config.read('settings.ini')
+        self.checkBox_popup.setChecked(bool(int(config['popup']['on'])))
+        self.lineEdit_notifysound.setText(config['popup']['soundpath'])
+        self.checkBox_notifysound.setChecked(bool(int(config['popup']['soundon'])))
+        self.spinBox_xpos.setValue(int(config['popup']['x']))
         self.colour = config['icons']['colour']
+        self.colour_pre = config['icons']['colour']
         self.label_colour.setStyleSheet('color: ' + self.colour)
         self.checkbox_showcount.setChecked(bool(int(config['ticks']['showcount'])))
         self.checkbox_minimizetotray.setChecked(bool(int(config['ticks']['minimizetotray'])))
@@ -51,25 +149,31 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         for value in config['profiles']:
             self.profiles.append(config['profiles'][str(value)])
             self.listWidget.addItem(config['profiles'][str(value)])
-        self.actionsetup()
         self.testforprofile()
+        self.popup = Popup()
+        self.actionsetup()
         self.timersetup()
 
     def actionsetup(self):
+        self.popup.xpos = self.spinBox_xpos.value()
+        self.popup.popupon = self.checkBox_popup.isChecked()
+        self.popup.soundon = self.checkBox_notifysound.isChecked()
+        self.popup.sound = QSound(self.lineEdit_notifysound.text())
         self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
         self.tray_icon.setToolTip('TB-Tray')
         action_hideshow = QAction("Hide/Show", self)
         action_settings = QAction("Settings", self)
         action = QAction("Exit", self)
-        action.triggered.connect(close)
-        action_hideshow.triggered.connect(self.iconmenushowhide)
-        action_settings.triggered.connect(self.settings)
-        self.tray_icon.activated.connect(self.iconclick)
         tray_menu = QMenu()
         tray_menu.addAction(action_hideshow)
         tray_menu.addAction(action_settings)
         tray_menu.addAction(action)
         self.tray_icon.setContextMenu(tray_menu)
+        action.triggered.connect(close)
+        action_hideshow.triggered.connect(self.iconmenushowhide)
+        action_settings.triggered.connect(self.settings)
+        self.toolButton_notifysound.clicked.connect(self.func_toolbutton_notifysound)
+        self.tray_icon.activated.connect(self.iconclick)
         self.pushButton_cancel.clicked.connect(self.cancel)
         self.pushButton_ok.clicked.connect(self.ok)
         self.toolButton_profilepath.clicked.connect(self.selectfile)
@@ -80,6 +184,11 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
+        self.popup.fire(self.profiles, 10, True)
+
+    def func_toolbutton_notifysound(self):
+        x = QFileDialog.getOpenFileName(self, 'Select Notify Sound File', '/home/' + getpass.getuser())[0]
+        if x: self.lineEdit_notifysound.setText(x)
 
     def func_colourpicker(self):
         x = QColorDialog.getColor()
@@ -89,13 +198,11 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def func_defaulticon(self):
         x = QFileDialog.getOpenFileName(self, 'Select Default Icon', '/home/' + getpass.getuser())[0]
-        if x:
-            self.lineedit_defulticon.setText(x)
+        if x: self.lineedit_defulticon.setText(x)
 
     def func_notifyicon(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Icon', '/home/' + getpass.getuser())[0]
-        if x:
-            self.lineedit_notifyicon.setText(x)
+        if x: self.lineedit_notifyicon.setText(x)
 
     def func_minimizetotrayclicked(self):
         if not self.checkbox_minimizetotray.isChecked():
@@ -129,17 +236,29 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def selectfile(self):
         x = QFileDialog.getOpenFileName(self, 'Select Profile .msf File', '/home/' + getpass.getuser() + '/.thunderbird/')[0]
-        if x:
-            self.editline_profilepath.setText(x)
+        if x: self.editline_profilepath.setText(x)
 
     def cancel(self):
         self.testforprofile()
         self.hide()
         self.label_colour.setStyleSheet('color: ' + self.colour)
+        self.spinBox_xpos.setValue(self.popup.xpos)
+        self.checkBox_popup.setChecked(self.popup.popupon)
+        self.lineEdit_notifysound.setText(self.popup.sound.fileName())
+        self.checkBox_notifysound.setChecked(self.popup.soundon)
         self.timetriggercheck.start(1000)
 
     def ok(self):
         config = configparser.ConfigParser()
+        config['popup'] = {}
+        config['popup']['on'] = str(int(self.checkBox_popup.isChecked()))
+        self.popup.popupon = self.checkBox_popup.isChecked()
+        config['popup']['soundpath'] = self.lineEdit_notifysound.text()
+        self.popup.sound = QSound(self.lineEdit_notifysound.text())
+        config['popup']['soundon'] = str(int(self.checkBox_notifysound.isChecked()))
+        self.popup.soundon = self.checkBox_notifysound.isChecked()
+        config['popup']['x'] = str(self.spinBox_xpos.value())
+        self.popup.xpos = self.spinBox_xpos.value()
         config['ticks'] = {}
         config['ticks']['minimizetotray'] = str(int(self.checkbox_minimizetotray.isChecked()))
         config['ticks']['showcount'] = str(int(self.checkbox_showcount.isChecked()))
@@ -204,6 +323,9 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.tabWidget.setCurrentIndex(1)
             return
         self.timetriggercheck.stop()
+        if self.popup.textBrowser.INTRAY:
+            self.INTRAY = False
+            self.popup.textBrowser.INTRAY = False
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
             result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
@@ -212,14 +334,15 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.INTRAY = True
             else:
                 self.windowid = result.stdout.decode('UTF-8')
+                self.popup.textBrowser.windowid = self.windowid
         for profile in self.profiles:
             if os.path.getmtime(profile) > self.lastmtime:
                 self.lastmtime = os.path.getmtime(profile)
                 self.matches = 0
                 for profile2 in self.profiles:
-                    file = open(profile2, 'r')
-                    filetext = file.read()
-                    file.close()
+                    if not os.path.isfile(profile2): continue
+                    tex = subprocess.run(["tail", "-n", "2000", profile2], stdout=subprocess.PIPE)
+                    filetext = tex.stdout.decode('UTF-8')
                     matchesx = re.findall('\^A2=(\w+)', filetext)
                     if matchesx:
                         self.matches += int(matchesx[-1], 16)
@@ -242,10 +365,9 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         painter.drawText(int((pixmap.width() - fm.width(count)) / 2), int((pixmap.height() - fm.height()) / 2 + fm.ascent() + 1), count)
                         painter.end()
                         self.tray_icon.setIcon(QtGui.QIcon(pixmap))
-                    else:
-                        self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
-                else:
-                    self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
+                    else: self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
+                    if not self.badprofile: self.popup.fire(self.profiles, self.matches)
+                else: self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
                 break
         self.timetriggercheck.start(1000)
 
@@ -262,7 +384,7 @@ class ExampleApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    ui = ExampleApp()
+    ui = MainApp()
     ui.hide()
     sys.exit(app.exec_())
 
