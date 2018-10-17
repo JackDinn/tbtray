@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColor
 
 import popup
 import tbtrayui
-
+# grrr
 
 def close():
     os.system('pkill thunderbird')
