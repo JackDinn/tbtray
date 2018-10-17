@@ -37,3 +37,4 @@ example INBOX.msf :-
 * You can also click on the popup notification to show the TB window
 
 
+![Basic Settings](https://i.imgur.com/W3XY70L.png)

@@ -245,7 +245,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.label_colour.setStyleSheet('color: ' + self.colour)
         self.spinBox_xpos.setValue(self.popup.xpos)
         self.checkBox_popup.setChecked(self.popup.popupon)
-        self.lineEdit_notifysound.setText(str(self.popup.sound))
+        self.lineEdit_notifysound.setText(self.popup.sound.fileName())
         self.checkBox_notifysound.setChecked(self.popup.soundon)
         self.timetriggercheck.start(1000)
 
