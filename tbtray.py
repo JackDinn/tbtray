@@ -79,7 +79,19 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
         self.xpos = 1585
         self.shownmessages = []
 
-    def fire(self, profiles, count=1, firstrun=False):
+    def fire(self, profiles, count=1, firstrun=False, testrun=False):
+        if testrun:
+            if self.popupon or self.sound:
+                self.textBrowser.clear()
+                xx = ''
+                for tt in range(3):
+                    xx += '<h3 style="color: DodgerBlue"><center>Mail Info:- From address</center></h3><p>Subject line of text</p>'
+                self.textBrowser.setText(xx)
+                self.setGeometry(self.xpos, 40, 330, 100 * 3)
+                self.popup_timer.start(20000)
+                if self.popupon: self.show()
+                if self.soundon: self.sound.play()
+
         if self.popupon or self.sound:
             popprofiles = []
             fileexists = False
@@ -99,8 +111,10 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
                 for fr in mailinfo['messageid']: self.shownmessages.append(fr)
                 if not firstrun and len(mailinfo['messageid']) > 0:
                     self.textBrowser.clear()
+                    vv = ''
                     for x in range(len(mailinfo['messageid'])):
-                        self.textBrowser.append('<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + mailinfo['subject'][x - 1])
+                        vv += '<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + mailinfo['subject'][x - 1]
+                    self.textBrowser.setText(vv)
                     self.setGeometry(self.xpos, 40, 330, 130*len(mailinfo['messageid']))
                     self.popup_timer.start(10000)
                     if self.popupon: self.show()
@@ -133,6 +147,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.notifyicon = self.lineedit_notifyicon.text()
         config = configparser.ConfigParser()
         config.read('settings.ini')
+        self.horizontalSlider_opacity.setValue(int(config['popup']['opacity']))
         self.checkBox_popup.setChecked(bool(int(config['popup']['on'])))
         self.lineEdit_notifysound.setText(config['popup']['soundpath'])
         self.checkBox_notifysound.setChecked(bool(int(config['popup']['soundon'])))
@@ -155,6 +170,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timersetup()
 
     def actionsetup(self):
+        self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
         self.popup.xpos = self.spinBox_xpos.value()
         self.popup.popupon = self.checkBox_popup.isChecked()
         self.popup.soundon = self.checkBox_notifysound.isChecked()
@@ -172,6 +188,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         action.triggered.connect(close)
         action_hideshow.triggered.connect(self.iconmenushowhide)
         action_settings.triggered.connect(self.settings)
+        self.toolButton_firepopup.clicked.connect(self.func_toolbutton_firepopup)
         self.toolButton_notifysound.clicked.connect(self.func_toolbutton_notifysound)
         self.tray_icon.activated.connect(self.iconclick)
         self.pushButton_cancel.clicked.connect(self.cancel)
@@ -185,6 +202,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
         self.popup.fire(self.profiles, 10, True)
+
+    def func_toolbutton_firepopup(self):
+        self.popup.fire(self.profiles, 2, False, True)
 
     def func_toolbutton_notifysound(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Sound File', '/home/' + getpass.getuser())[0]
@@ -246,11 +266,14 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.checkBox_popup.setChecked(self.popup.popupon)
         self.lineEdit_notifysound.setText(self.popup.sound.fileName())
         self.checkBox_notifysound.setChecked(self.popup.soundon)
+        self.horizontalSlider_opacity.setValue(int(self.popup.windowOpacity()*100))
         self.timetriggercheck.start(1000)
 
     def ok(self):
         config = configparser.ConfigParser()
         config['popup'] = {}
+        config['popup']['opacity'] = str(int(self.horizontalSlider_opacity.value()))
+        self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
         config['popup']['on'] = str(int(self.checkBox_popup.isChecked()))
         self.popup.popupon = self.checkBox_popup.isChecked()
         config['popup']['soundpath'] = self.lineEdit_notifysound.text()
