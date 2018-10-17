@@ -1,5 +1,5 @@
 # tbtray
-A thunderbird tray addon for linux (best on KDE).
+A Thunderbird tray addon for linux (best on KDE).
 
 I only built it because we did'nt have any TB tray integration and i was also 
 bored, but others can feel free to use it. Keep in mind im just a hobbyist. I'm doing this to try and
