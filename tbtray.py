@@ -235,7 +235,11 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timetriggercheck.start(1000)
 
     def selectfile(self):
+<<<<<<< HEAD
         x = QFileDialog.getOpenFileName(self, 'Select Profile .msf File', '/home/' + getpass.getuser() + '/.thunderbird/', "INBOX.msf(INBOX.msf)")[0]
+=======
+        x = QFileDialog.getOpenFileName(self, 'Select Profile .msf File', '/home/' + getpass.getuser() + '/.thunderbird/')[0]
+>>>>>>> origin/master
         if x: self.editline_profilepath.setText(x)
 
     def cancel(self):
