@@ -1,7 +1,9 @@
 #!/usr/bin/env python
+import base64
 import configparser
 import getpass
 import os
+import quopri
 import re
 import subprocess
 import sys
@@ -113,12 +115,25 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
                     self.textBrowser.clear()
                     vv = ''
                     for x in range(len(mailinfo['messageid'])):
-                        vv += '<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + mailinfo['subject'][x - 1]
+                        decode = self.encoded_words_to_text(mailinfo['subject'][x - 1])
+                        vv += '<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + decode
                     self.textBrowser.setText(vv)
                     self.setGeometry(self.xpos, 40, 330, 130*len(mailinfo['messageid']))
                     self.popup_timer.start(10000)
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
+
+    @staticmethod
+    def encoded_words_to_text(encoded_words):
+        byte_string = ''
+        encoded_word_regex = r'=\?{1}(.+)\?{1}([B|Q])\?{1}(.+)\?{1}='
+        if not re.match(encoded_word_regex, encoded_words): return encoded_words
+        charset, encoding, encoded_text = re.match(encoded_word_regex, encoded_words).groups()
+        if encoding is 'B':
+            byte_string = base64.b64decode(encoded_text)
+        elif encoding is 'Q':
+            byte_string = quopri.decodestring(encoded_text)
+        return byte_string.decode(charset)
 
     def timer(self):
         self.hide()

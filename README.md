@@ -35,6 +35,7 @@ example INBOX.msf :-
 * set icons (one for default (no unread), another for the notification
 * Allow TBtray to take over the popup notification & sound from TB
 * You can also click on the popup notification to show the TB window
+* Set opacity of popup
 * Very low idle CPU
 
 
