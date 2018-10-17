@@ -7,7 +7,7 @@ bored, but others can feel free to use it. Keep in mind im just a hobbyist. I'm 
 
 **you will need xdotool, wmctrl & qt5-multimedia installed **
 
-### ***pacman -S wmctrl xdotool qt5-multimedia*** ###
+### ***sudo pacman -S wmctrl xdotool qt5-multimedia*** ###
 
 Then run it from inside the tbtray folder
 
@@ -35,6 +35,7 @@ example INBOX.msf :-
 * set icons (one for default (no unread), another for the notification
 * Allow TBtray to take over the popup notification & sound from TB
 * You can also click on the popup notification to show the TB window
+* Very low idle CPU
 
 
 ![Basic Settings](https://i.imgur.com/W3XY70L.png)
