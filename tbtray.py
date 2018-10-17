@@ -98,8 +98,8 @@ class Popup(QtWidgets.QDialog):
                 for tt in range(3):
                     xx += '<h3 style="color: DodgerBlue"><center>Mail Info:- From address</center></h3><p>Subject line of text</p>'
                 self.textBrowser.setText(xx)
-                self.setGeometry(self.xpos, 40, 330, 90 * 3)
-                self.textBrowser.setGeometry(5, 5, 322, (90*3)-10)
+                self.setGeometry(self.xpos, 40, 330, 93 * 3)
+                self.textBrowser.setGeometry(5, 5, 322, (93*3)-10)
                 self.popup_timer.start(20000)
                 if self.popupon: self.show()
                 if self.soundon: self.sound.play()
@@ -128,8 +128,8 @@ class Popup(QtWidgets.QDialog):
                         decode = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         vv += '<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + decode
                     self.textBrowser.setText(vv)
-                    self.setGeometry(self.xpos, 40, 330, 90*len(mailinfo['messageid']))
-                    self.textBrowser.setGeometry(5, 5, 322, ((90 * len(mailinfo['messageid'])) - 10))
+                    self.setGeometry(self.xpos, 40, 330, 93*len(mailinfo['messageid']))
+                    self.textBrowser.setGeometry(5, 5, 322, ((93 * len(mailinfo['messageid'])) - 10))
                     self.popup_timer.start(10000)
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
@@ -227,7 +227,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
-        self.popup.fire(self.profiles, 10, True)
+        self.popup.fire(self.profiles, 1, True)
 
     def func_toolbutton_firepopup(self):
         self.popup.fire(self.profiles, 2, False, True)
