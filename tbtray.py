@@ -8,13 +8,12 @@ import re
 import subprocess
 import sys
 
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
 from PyQt5.QtMultimedia import QSound
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
 
-import popup
 import tbtrayui
 
 
@@ -62,13 +61,18 @@ class TextBrowser(QtWidgets.QTextBrowser):
         self.INTRAY = True
 
 
-class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
+class Popup(QtWidgets.QDialog):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-        self.setupUi(self)
-        self.textBrowser = TextBrowser()
-        self.verticalLayout.addWidget(self.textBrowser)
+        self.setObjectName("formpopup")
+        self.resize(407, 303)
+        self.setMinimumSize(QtCore.QSize(0, 0))
+        self.setStatusTip("")
+        self.setWindowTitle("formpopup")
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.textBrowser = TextBrowser(self)
+        self.textBrowser.setGeometry(5, 5, 322, 100)
         self.popupon = True
         self.sound = QSound("res/popup.wav")
         self.soundon = True
@@ -89,7 +93,8 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
                 for tt in range(3):
                     xx += '<h3 style="color: DodgerBlue"><center>Mail Info:- From address</center></h3><p>Subject line of text</p>'
                 self.textBrowser.setText(xx)
-                self.setGeometry(self.xpos, 40, 330, 100 * 3)
+                self.setGeometry(self.xpos, 40, 330, 90 * 3)
+                self.textBrowser.setGeometry(5, 5, 322, (90*3)-10)
                 self.popup_timer.start(20000)
                 if self.popupon: self.show()
                 if self.soundon: self.sound.play()
@@ -118,7 +123,8 @@ class Popup(QtWidgets.QDialog, popup.Ui_formpopup):
                         decode = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         vv += '<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + decode
                     self.textBrowser.setText(vv)
-                    self.setGeometry(self.xpos, 40, 330, 130*len(mailinfo['messageid']))
+                    self.setGeometry(self.xpos, 40, 330, 90*len(mailinfo['messageid']))
+                    self.textBrowser.setGeometry(5, 5, 322, ((90 * len(mailinfo['messageid'])) - 10))
                     self.popup_timer.start(10000)
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
