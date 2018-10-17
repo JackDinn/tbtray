@@ -7,7 +7,7 @@ bored, but others can feel free to use it. Keep in mind im just a hobbyist. I'm 
 
 **you will need xdotool, wmctrl & qt5-multimedia installed **
 
-**pacman -S wmctrl xdotool qt5-multimedia**
+### ***pacman -S wmctrl xdotool qt5-multimedia*** ###
 
 Then run it from inside the tbtray folder
 
