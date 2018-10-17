@@ -73,6 +73,11 @@ class Popup(QtWidgets.QDialog):
         QtCore.QMetaObject.connectSlotsByName(self)
         self.textBrowser = TextBrowser(self)
         self.textBrowser.setGeometry(5, 5, 322, 100)
+        self.closebutton = QtWidgets.QPushButton(self)
+        self.closebutton.setText('X')
+        self.closebutton.setGeometry(304, 8, 20, 20)
+        self.closebutton.setStyleSheet('color: red')
+        self.closebutton.clicked.connect(self.clicked)
         self.popupon = True
         self.sound = QSound("res/popup.wav")
         self.soundon = True
