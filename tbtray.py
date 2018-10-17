@@ -26,7 +26,6 @@ def readmessage(path, count=1):
     subject_text = []
     date_text = []
     messageid_text = []
-    print('popup read')
     for gg in path:
         if not os.path.isfile(gg): continue
         tex = subprocess.run(["tail", "-n", "8000", gg], stdout=subprocess.PIPE)
@@ -340,7 +339,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             if os.path.getmtime(profile) > self.lastmtime:
                 self.lastmtime = os.path.getmtime(profile)
                 self.matches = 0
-                print('fire read')
                 for profile2 in self.profiles:
                     if not os.path.isfile(profile2): continue
                     tex = subprocess.run(["tail", "-n", "2000", profile2], stdout=subprocess.PIPE)

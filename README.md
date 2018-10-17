@@ -5,9 +5,9 @@ I only built it because we did'nt have any TB tray integration and i was also
 bored, but others can feel free to use it. Keep in mind im just a hobbyist. I'm doing this to try and
  learn a little about using git and github.
 
-**you will need xdotool & wmctrl installed and Its a PyQt5 project**
+**you will need xdotool, wmctrl & qt5-multimedia installed **
 
-**pacman -S wmctrl xdotool**
+**pacman -S wmctrl xdotool qt5-multimedia**
 
 Then run it from inside the tbtray folder
 
