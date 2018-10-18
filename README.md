@@ -14,8 +14,7 @@ Then run it from inside the tbtray folder
 **./tbtray.py**
 
 All you need to do is run ./tbtray.py then select your INBOX.msf files for your accounts. 
-You might need to first remove any paths listed in the main profile box (select them and click remove)
-then find (or manually enter) the path to your Inbox.msf files in the top bar and click "add" to put them
+Find (or manually enter) the path to your Inbox.msf files in the top bar and click "add" to put them
 into your profile list box.
 
 example of INBOX.msf :-
