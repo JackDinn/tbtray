@@ -34,7 +34,7 @@ def checksettings():
     config_new.read('settings.ini')
     config_old.read(str(my_file))
     for xx in config_new.sections():
-        if config_old[xx]: continue
+        if xx == 'profiles': continue
         if not config_old.__contains__(xx):
             config_old.add_section(xx)
         for hh in config_new[xx]:
