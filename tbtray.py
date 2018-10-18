@@ -51,7 +51,7 @@ def readmessage(path, count=1):
     messageid_text = []
     for gg in path:
         if not os.path.isfile(gg): continue
-        tex = subprocess.run(["tail", "-n", "8000", gg], stdout=subprocess.PIPE)
+        tex = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE)
         text = tex.stdout.decode('UTF-8')
         fromx = re.findall('\\r\\nFrom: (.*@.*)\\r\\n', text)[(0 - count):]
         subject = re.findall('\\r\\nSubject: (.*)\\r\\n', text)[0 - count:]
@@ -164,14 +164,15 @@ class Popup(QtWidgets.QDialog):
     @staticmethod
     def encoded_words_to_text(encoded_words):
         byte_string = ''
-        encoded_word_regex = r'=\?{1}(.+)\?{1}([B|Q])\?{1}(.+)\?{1}='
+        encoded_word_regex = r'=\?{1}(.+)\?{1}([B|Q|b|q])\?{1}(.+)\?{1}='
         if not re.match(encoded_word_regex, encoded_words): return encoded_words
         charset, encoding, encoded_text = re.match(encoded_word_regex, encoded_words).groups()
-        if encoding is 'B':
+        if encoding is 'B'or encoding is 'b':
             byte_string = base64.b64decode(encoded_text)
-        elif encoding is 'Q':
+        elif encoding is 'Q' or encoding is 'q':
             byte_string = quopri.decodestring(encoded_text)
-        return byte_string.decode(charset)
+        if byte_string: return byte_string.decode(charset)
+        return 'Could Not decode Subject string'
 
     def timer2(self):
         if self.textBrowser.INTRAY:
@@ -263,7 +264,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
-        self.popup.fire(self.profiles, 1, True)
+        self.popup.fire(self.profiles, 20, True)
 
     def func_toolbutton_firepopup(self):
         self.popup.fire(self.profiles, 2, False, True)
@@ -273,8 +274,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         if x: self.lineEdit_notifysound.setText(x)
 
     def func_colourpicker(self):
-        x = QColorDialog.getColor()
-        if x:
+        x = QColorDialog.getColor(QColor(self.colour))
+        if x.value():
             self.label_colour.setStyleSheet('color: ' + x.name())
             self.colour_pre = x.name()
 
@@ -429,8 +430,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                     tex = subprocess.run(["tail", "-n", "2000", profile2], stdout=subprocess.PIPE)
                     filetext = tex.stdout.decode('UTF-8')
                     matchesx = re.findall('\^A2=(\w+)', filetext)
-                    if matchesx:
-                        self.matches += int(matchesx[-1], 16)
+                    if matchesx: self.matches += int(matchesx[-1], 16)
                 if self.matches > 0:
                     if self.checkbox_showcount.isChecked():
                         iconpixmap = QtGui.QPixmap(self.notifyicon)
