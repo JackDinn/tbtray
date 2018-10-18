@@ -174,12 +174,16 @@ class Popup(QtWidgets.QDialog):
         return byte_string.decode(charset)
 
     def timer2(self):
-        if self.textBrowser.INTRAY: self.hide()
+        if self.textBrowser.INTRAY:
+            self.popup_timer2.stop()
+            self.hide()
 
     def timer(self):
+        self.popup_timer2.stop()
         self.hide()
 
     def clicked(self):
+        self.popup_timer2.stop()
         self.hide()
 
 
