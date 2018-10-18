@@ -151,8 +151,9 @@ class Popup(QtWidgets.QDialog):
                     self.textBrowser.clear()
                     vv = ''
                     for x in range(len(mailinfo['messageid'])):
-                        decode = self.encoded_words_to_text(mailinfo['subject'][x - 1])
-                        vv += '<h3 style="color: DodgerBlue"><center>' + mailinfo['from'][x - 1] + '</center></h3><p>' + decode
+                        fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
+                        subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
+                        vv += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
                     self.textBrowser.setText(vv)
                     self.setGeometry(self.xpos, 40, 330, 93*len(mailinfo['messageid']))
                     self.textBrowser.setGeometry(5, 5, 322, ((93 * len(mailinfo['messageid'])) - 10))
@@ -264,7 +265,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
-        self.popup.fire(self.profiles, 20, True)
+        self.popup.fire(self.profiles, 10, True)
 
     def func_toolbutton_firepopup(self):
         self.popup.fire(self.profiles, 2, False, True)
