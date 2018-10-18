@@ -7,6 +7,8 @@ import quopri
 import re
 import subprocess
 import sys
+from pathlib import Path
+from shutil import copyfile
 
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QTimer
@@ -20,6 +22,26 @@ import tbtrayui
 def close():
     os.system('pkill thunderbird')
     sys.exit(0)
+
+
+def checksettings():
+    my_dir = Path(str(Path.home()) + '/.config/tbtray')
+    my_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
+    if not my_dir.is_dir(): my_dir.mkdir()
+    if not my_file.is_file(): copyfile('settings.ini', str(my_file))
+    config_new = configparser.ConfigParser()
+    config_old = configparser.ConfigParser()
+    config_new.read('settings.ini')
+    config_old.read(str(my_file))
+    for xx in config_new.sections():
+        if not config_old.__contains__(xx):
+            config_old.add_section(xx)
+        for hh in config_new[xx]:
+            if not config_old[xx].__contains__(hh):
+                config_old[xx][hh] = config_new[xx][hh]
+    with open(my_file, 'w') as configfile:
+        config_old.write(configfile)
+        configfile.close()
 
 
 def readmessage(path, count=1):
@@ -70,7 +92,6 @@ class Popup(QtWidgets.QDialog):
         self.setMinimumSize(QtCore.QSize(0, 0))
         self.setStatusTip("")
         self.setWindowTitle("formpopup")
-        QtCore.QMetaObject.connectSlotsByName(self)
         self.textBrowser = TextBrowser(self)
         self.textBrowser.setGeometry(5, 5, 322, 100)
         self.closebutton = QtWidgets.QPushButton(self)
@@ -84,6 +105,9 @@ class Popup(QtWidgets.QDialog):
         self.popup_timer = QTimer(self)
         self.popup_timer.setSingleShot(True)
         self.popup_timer.timeout.connect(self.timer)
+        self.popup_timer2 = QTimer(self)
+        self.popup_timer2.setInterval(1000)
+        self.popup_timer2.timeout.connect(self.timer2)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowFlags(Qt.X11BypassWindowManagerHint)
         self.setWindowOpacity(0.90)
@@ -101,8 +125,10 @@ class Popup(QtWidgets.QDialog):
                 self.setGeometry(self.xpos, 40, 330, 93 * 3)
                 self.textBrowser.setGeometry(5, 5, 322, (93*3)-10)
                 self.popup_timer.start(20000)
+                self.popup_timer2.start()
                 if self.popupon: self.show()
                 if self.soundon: self.sound.play()
+                return
 
         if self.popupon or self.sound:
             popprofiles = []
@@ -131,6 +157,7 @@ class Popup(QtWidgets.QDialog):
                     self.setGeometry(self.xpos, 40, 330, 93*len(mailinfo['messageid']))
                     self.textBrowser.setGeometry(5, 5, 322, ((93 * len(mailinfo['messageid'])) - 10))
                     self.popup_timer.start(10000)
+                    self.popup_timer2.start()
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
 
@@ -146,6 +173,9 @@ class Popup(QtWidgets.QDialog):
             byte_string = quopri.decodestring(encoded_text)
         return byte_string.decode(charset)
 
+    def timer2(self):
+        if self.textBrowser.INTRAY: self.hide()
+
     def timer(self):
         self.hide()
 
@@ -159,6 +189,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         super(self.__class__, self).__init__()
         os.system('thunderbird > /dev/null 2>&1 & disown')
         os.chdir(os.path.dirname(sys.argv[0]))
+        self.my_settings_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
         self.matches = 0
         self.lastmtime = 0
         self.timetriggercheck = QTimer(self)
@@ -171,8 +202,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.badprofile = True
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
+        checksettings()
         config = configparser.ConfigParser()
-        config.read('settings.ini')
+        config.read(self.my_settings_file)
         self.horizontalSlider_opacity.setValue(int(config['popup']['opacity']))
         self.checkBox_popup.setChecked(bool(int(config['popup']['on'])))
         self.lineEdit_notifysound.setText(config['popup']['soundpath'])
@@ -323,7 +355,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         for x in range(self.listWidget.count()):
             self.profiles.append(self.listWidget.item(x).text())
             config['profiles'][str(x)] = self.listWidget.item(x).text()
-        with open('settings.ini', 'w') as configfile:
+        with open(self.my_settings_file, 'w') as configfile:
             config.write(configfile)
             configfile.close()
         self.testforprofile()
