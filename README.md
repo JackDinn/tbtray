@@ -34,7 +34,7 @@ example of INBOX.msf :-
 * You can also click on the popup notification to show the TB window
 * Set opacity of popup
 * Popup option to Show favicons alongside individual emails (these are scraped once & then cached locally)
-* Very low idle CPU
+* Very low idle CPU & Memory.
 
 
 
