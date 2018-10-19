@@ -121,7 +121,6 @@ class Popup(QtWidgets.QDialog):
         self.setWindowOpacity(0.90)
         self.xpos = 1585
         self.shownmessages = []
-        self.show()
 
     def fire(self, profiles, count=1, firstrun=False, testrun=False):
         if testrun:
@@ -130,12 +129,12 @@ class Popup(QtWidgets.QDialog):
                 xx = ''
                 for tt in range(3):
                     xx += '<h3 style="color: DodgerBlue"><center>Mail Info:- From address</center></h3><p>Subject line of text</p>'
+                if self.popupon: self.show()
+                if self.soundon: self.sound.play()
                 self.textBrowser.setText(xx)
                 self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
                 self.popup_timer.start(20000)
                 self.popup_timer2.start()
-                if self.popupon: self.show()
-                if self.soundon: self.sound.play()
                 return
 
         if self.popupon or self.sound:
@@ -162,12 +161,12 @@ class Popup(QtWidgets.QDialog):
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         vv += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
-                    self.textBrowser.setText(vv)
                     if self.popupon: self.show()
+                    if self.soundon: self.sound.play()
+                    self.textBrowser.setText(vv)
                     self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
                     self.popup_timer.start(10000)
                     self.popup_timer2.start()
-                    if self.soundon: self.sound.play()
 
     @staticmethod
     def encoded_words_to_text(encoded_words):
