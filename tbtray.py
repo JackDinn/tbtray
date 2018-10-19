@@ -7,6 +7,7 @@ import quopri
 import re
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 from shutil import copyfile
 
@@ -22,6 +23,20 @@ import tbtrayui
 def close():
     os.system('pkill thunderbird')
     sys.exit(0)
+
+
+def getfavicon(url):
+    try:
+        path = str(Path.home()) + '/.config/tbtray/icons/'
+        iconpath = path + url + '.ico'
+        if Path.is_file(Path(iconpath)):
+            return iconpath
+        icon = urllib.request.urlopen('https://api.faviconkit.com/' + url + '/16')
+        with open(iconpath, "wb") as f:
+            f.write(icon.read())
+        return iconpath
+    except:
+        return 'res/thunderbird.png'
 
 
 def checkdependencies():
@@ -40,8 +55,9 @@ def checkdependencies():
 
 def checksettings():
     my_dir = Path(str(Path.home()) + '/.config/tbtray')
-    my_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
     if not my_dir.is_dir(): my_dir.mkdir()
+    if not Path(str(Path.home()) + '/.config/tbtray/icons').is_dir(): Path.mkdir(Path(str(Path.home()) + '/.config/tbtray/icons'))
+    my_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
     if not my_file.is_file(): copyfile('settings.ini', str(my_file))
     config_new = configparser.ConfigParser()
     config_old = configparser.ConfigParser()
@@ -94,6 +110,7 @@ class TextBrowser(QtWidgets.QTextBrowser):
         self.document().contentsChanged.connect(self.sizechange)
 
     def sizechange(self):
+
         docheight = self.document().size().height()
         self.height = int(docheight)
         self.setGeometry(5, 5, 322, self.height + 10)
@@ -110,7 +127,7 @@ class Popup(QtWidgets.QDialog):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setObjectName("formpopup")
-        self.resize(407, 303)
+        self.setGeometry(1585, 40, 330, 293)
         self.setMinimumSize(QtCore.QSize(0, 0))
         self.setStatusTip("")
         self.setWindowTitle("formpopup")
@@ -121,6 +138,7 @@ class Popup(QtWidgets.QDialog):
         self.closebutton.setGeometry(304, 8, 20, 20)
         self.closebutton.setStyleSheet('color: red')
         self.closebutton.clicked.connect(self.clicked)
+        self.favicons = True
         self.popupon = True
         self.sound = QSound("res/popup.wav")
         self.soundon = True
@@ -141,12 +159,17 @@ class Popup(QtWidgets.QDialog):
             if self.popupon or self.sound:
                 self.textBrowser.clear()
                 xx = ''
+                reg = re.findall('@(\w*.[a-zA-Z0-9]*\.[a-zA-Z0-9]*)', 'fred@twitter.com')[0]
+                icon = getfavicon(reg)
                 for tt in range(3):
-                    xx += '<h3 style="color: DodgerBlue"><center>Mail Info:- From address</center></h3><p>Subject line of text</p>'
+                    if self.favicons:
+                        xx += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;Twitter "info@twitter.com"</h3><p>This is a test message'
+                    else:
+                        xx += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
                 if self.popupon: self.show()
-                if self.soundon: self.sound.play()
                 self.textBrowser.setText(xx)
                 self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
+                if self.soundon: self.sound.play()
                 self.popup_timer.start(20000)
                 self.popup_timer2.start()
                 return
@@ -174,7 +197,11 @@ class Popup(QtWidgets.QDialog):
                     for x in range(len(mailinfo['messageid'])):
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
-                        vv += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
+                        if self.favicons:
+                            icon = getfavicon(re.findall('@(\w*.[a-zA-Z0-9]*\.[a-zA-Z0-9]*)', fromx)[0])
+                            vv += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
+                        else:
+                            vv += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
                     self.textBrowser.setText(vv)
@@ -188,12 +215,15 @@ class Popup(QtWidgets.QDialog):
         encoded_word_regex = r'=\?{1}(.+)\?{1}([B|Q|b|q])\?{1}(.+)\?{1}='
         if not re.match(encoded_word_regex, encoded_words): return encoded_words
         charset, encoding, encoded_text = re.match(encoded_word_regex, encoded_words).groups()
-        if encoding is 'B'or encoding is 'b':
-            byte_string = base64.b64decode(encoded_text)
-        elif encoding is 'Q' or encoding is 'q':
-            byte_string = quopri.decodestring(encoded_text)
-        if byte_string: return byte_string.decode(charset)
-        return 'Could Not decode Subject string'
+        try:
+            if encoding is 'B'or encoding is 'b':
+                byte_string = base64.b64decode(encoded_text)
+            elif encoding is 'Q' or encoding is 'q':
+                byte_string = quopri.decodestring(encoded_text)
+            if byte_string: return byte_string.decode(charset)
+        except:
+            print('def encoded_words_to_text:  LookupError: unknown encoding')
+            return 'Could Not decode Subject string'
 
     def timer2(self):
         if self.textBrowser.INTRAY:
@@ -232,6 +262,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         checkdependencies()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
+        self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
         self.horizontalSlider_opacity.setValue(int(config['popup']['opacity']))
         self.checkBox_popup.setChecked(bool(int(config['popup']['on'])))
         self.lineEdit_notifysound.setText(config['popup']['soundpath'])
@@ -255,6 +286,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timersetup()
 
     def actionsetup(self):
+        self.popup.favicons = self.checkBox_favicons.isChecked()
         self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
         self.popup.xpos = self.spinBox_xpos.value()
         self.popup.popupon = self.checkBox_popup.isChecked()
@@ -346,6 +378,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def cancel(self):
         self.testforprofile()
         self.hide()
+        self.checkBox_favicons.setChecked(self.popup.favicons)
         self.label_colour.setStyleSheet('color: ' + self.colour)
         self.spinBox_xpos.setValue(self.popup.xpos)
         self.checkBox_popup.setChecked(self.popup.popupon)
@@ -357,6 +390,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def ok(self):
         config = configparser.ConfigParser()
         config['popup'] = {}
+        config['popup']['favicons'] = str(int(self.checkBox_favicons.isChecked()))
+        self.popup.favicons = self.checkBox_favicons.isChecked()
         config['popup']['opacity'] = str(int(self.horizontalSlider_opacity.value()))
         self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
         config['popup']['on'] = str(int(self.checkBox_popup.isChecked()))
