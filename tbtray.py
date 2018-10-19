@@ -24,6 +24,20 @@ def close():
     sys.exit(0)
 
 
+def checkdependencies():
+    result = subprocess.run(["pacman", "-Qi", "xdotool", "qt5-multimedia", "wmctrl"], stdout=subprocess.PIPE)
+    stdout = result.stdout.decode('UTF-8')
+    out = re.search('Name.*xdotool', stdout)
+    if not out:
+        print('Please install xdotool > sudo pacman -S xdotool')
+    out = re.search('Name.*wmctrl', stdout)
+    if not out:
+        print('Please install wmctrl > sudo pacman -S wmctrl')
+    out = re.search('Name.*qt5-multimedia', stdout)
+    if not out:
+        print('Please install qt5-multimedia > sudo pacman -S qt5-multimedia')
+
+
 def checksettings():
     my_dir = Path(str(Path.home()) + '/.config/tbtray')
     my_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
@@ -215,6 +229,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         checksettings()
+        checkdependencies()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
         self.horizontalSlider_opacity.setValue(int(config['popup']['opacity']))

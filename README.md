@@ -7,7 +7,7 @@ bored, but others can feel free to use it. Keep in mind im just a hobbyist. I'm 
 
 **you will need xdotool, wmctrl & qt5-multimedia installed**
 
-### ***sudo pacman -S wmctrl xdotool qt5-multimedia*** ###
+### ***sudo pacman -S wmctrl xdotool qt5-multimedia***
 
 Then run it from inside the tbtray folder
 
@@ -36,4 +36,4 @@ example of INBOX.msf :-
 * Very low idle CPU
 
 
-![Basic Settings](https://i.imgur.com/W3XY70L.png)
+![Basic Settings](https://i.imgur.com/LifXzQm.png)
