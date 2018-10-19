@@ -293,7 +293,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup.soundon = self.checkBox_notifysound.isChecked()
         self.popup.sound = QSound(self.lineEdit_notifysound.text())
         self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
-        self.tray_icon.setToolTip('TB-Tray')
+        self.tray_icon.setToolTip('TBtray')
         action_hideshow = QAction("Hide/Show", self)
         action_settings = QAction("Settings", self)
         action = QAction("Exit", self)
