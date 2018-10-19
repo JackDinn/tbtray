@@ -259,7 +259,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         checksettings()
-        checkdependencies()
+        # checkdependencies()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
         self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
@@ -329,7 +329,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def func_colourpicker(self):
         x = QColorDialog.getColor(QColor(self.colour))
-        if x.value():
+        if x.isValid():
             self.label_colour.setStyleSheet('color: ' + x.name())
             self.colour_pre = x.name()
 
@@ -464,6 +464,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.show()
             self.activateWindow()
             self.tabWidget.setCurrentIndex(1)
+            self.timetriggercheck.start(5000)
             return
         self.timetriggercheck.stop()
         if self.popup.textBrowser.INTRAY:
