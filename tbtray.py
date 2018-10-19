@@ -76,6 +76,13 @@ class TextBrowser(QtWidgets.QTextBrowser):
         super(TextBrowser, self).__init__(parent)
         self.windowid = 0
         self.INTRAY = False
+        self.height = 100
+        self.document().contentsChanged.connect(self.sizechange)
+
+    def sizechange(self):
+        docheight = self.document().size().height()
+        self.height = int(docheight)
+        self.setGeometry(5, 5, 322, self.height + 10)
 
     def mouseReleaseEvent(self, event):
         subprocess.run(["xdotool", "windowmap", self.windowid])
@@ -114,6 +121,7 @@ class Popup(QtWidgets.QDialog):
         self.setWindowOpacity(0.90)
         self.xpos = 1585
         self.shownmessages = []
+        self.show()
 
     def fire(self, profiles, count=1, firstrun=False, testrun=False):
         if testrun:
@@ -123,8 +131,7 @@ class Popup(QtWidgets.QDialog):
                 for tt in range(3):
                     xx += '<h3 style="color: DodgerBlue"><center>Mail Info:- From address</center></h3><p>Subject line of text</p>'
                 self.textBrowser.setText(xx)
-                self.setGeometry(self.xpos, 40, 330, 93 * 3)
-                self.textBrowser.setGeometry(5, 5, 322, (93*3)-10)
+                self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
                 self.popup_timer.start(20000)
                 self.popup_timer2.start()
                 if self.popupon: self.show()
@@ -156,11 +163,10 @@ class Popup(QtWidgets.QDialog):
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         vv += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
                     self.textBrowser.setText(vv)
-                    self.setGeometry(self.xpos, 40, 330, 93*len(mailinfo['messageid']))
-                    self.textBrowser.setGeometry(5, 5, 322, ((93 * len(mailinfo['messageid'])) - 10))
+                    if self.popupon: self.show()
+                    self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
                     self.popup_timer.start(10000)
                     self.popup_timer2.start()
-                    if self.popupon: self.show()
                     if self.soundon: self.sound.play()
 
     @staticmethod
