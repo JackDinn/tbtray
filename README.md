@@ -5,16 +5,18 @@
 I only built it because we did'nt have any TB tray integration after Thunderbird 60+. 
 Keep in mind im just a hobbyist. I'm doing this to try and learn a little about using git and github.
 
-**you will need xdotool, wmctrl & qt5-multimedia installed**
+**you will need xdotool, wmctrl, python-beautifulsoup4 & qt5-multimedia installed**
 
-### ***sudo pacman -S wmctrl xdotool qt5-multimedia***
+### ***sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia***
 
-Then run it from inside the tbtray folder.
+If you are unsure use these 2 commands in your terminal (TBtray will do the rest):-
 
-**./tbtray.py**
+    >git clone https://github.com/JackDinn/tbtray.git
+    ...
+    >tbtray/tbtray.py
 
-All you need to do is run ./tbtray.py then select your INBOX.msf files for your accounts. 
-Find (or manually enter) the path to your INBOX.msf files in the top bar and click "add" to put them
+After installing and running TBtray select your INBOX.msf files for your accounts. 
+Find (or manually enter) the path to your INBOX.msf files in the top bar of the settings and click "add" to put them
 into your profile list box.
 
 example of INBOX.msf :-
@@ -44,3 +46,6 @@ example of INBOX.msf :-
 
 ![Basic Settings](https://i.imgur.com/lIJKRgZ.png)
 
+
+###Removal of TBtray
+just delete the tbtray folder and the settings folder found at ~/.config/tbtray

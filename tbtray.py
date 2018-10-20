@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import base64
 import configparser
 import getpass
@@ -15,8 +15,9 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
 from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
+from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog, QMessageBox
 
+import pyfav
 import tbtrayui
 
 
@@ -26,31 +27,73 @@ def close():
 
 
 def getfavicon(url):
+    path = str(Path.home()) + '/.config/tbtray/icons/'
+    iconpath = path + url + '.ico'
+    if Path.is_file(Path(iconpath)):
+        return iconpath
     try:
-        path = str(Path.home()) + '/.config/tbtray/icons/'
-        iconpath = path + url + '.ico'
-        if Path.is_file(Path(iconpath)):
-            return iconpath
-        icon = urllib.request.urlopen('https://api.faviconkit.com/' + url + '/16')
+        favicon_url = pyfav.get_favicon_url('http://' + url)
+        icon = urllib.request.urlopen(favicon_url)
         with open(iconpath, "wb") as f:
             f.write(icon.read())
         return iconpath
     except:
         return 'res/thunderbird.png'
 
+    # try:
+    #     path = str(Path.home()) + '/.config/tbtray/icons/'
+    #     iconpath = path + url + '.ico'
+    #     if Path.is_file(Path(iconpath)):
+    #         return iconpath
+    #     icon = urllib.request.urlopen('https://api.faviconkit.com/' + url + '/16')
+    #     with open(iconpath, "wb") as f:
+    #         f.write(icon.read())
+    #     return iconpath
+    # except:
+    #     return 'res/thunderbird.png'
+
 
 def checkdependencies():
-    result = subprocess.run(["pacman", "-Qi", "xdotool", "qt5-multimedia", "wmctrl"], stdout=subprocess.PIPE)
+    missing = []
+    result = subprocess.run(["pacman", "-Qi", "xdotool", "qt5-multimedia", "wmctrl", "python-beautifulsoup4"], stdout=subprocess.PIPE)
     stdout = result.stdout.decode('UTF-8')
     out = re.search('Name.*xdotool', stdout)
     if not out:
         print('Please install xdotool > sudo pacman -S xdotool')
+        missing.append('xdotool')
     out = re.search('Name.*wmctrl', stdout)
     if not out:
         print('Please install wmctrl > sudo pacman -S wmctrl')
+        missing.append('wmctrl')
     out = re.search('Name.*qt5-multimedia', stdout)
     if not out:
         print('Please install qt5-multimedia > sudo pacman -S qt5-multimedia')
+        missing.append('qt5-multimedia')
+    out = re.search('Name.*python-beautifulsoup4', stdout)
+    if not out:
+        print('Please install python-beautifulsoup4 > sudo pacman -S python-beautifulsoup4')
+        missing.append('python-beautifulsoup4')
+    if missing:
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Warning)
+        msg.setText("Missing dependencies: " + ' ,'.join(missing))
+        msg.setInformativeText("Do you want to install them ?")
+        msg.setWindowTitle("Dependency check")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setWindowFlags(Qt.WindowStaysOnTopHint)
+        retval = msg.exec_()
+        if retval == msg.Ok:
+            exstring = []
+            for hh in missing:
+                exstring.append(hh)
+            if exstring.__len__() == 1:
+                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0]])
+            elif exstring.__len__() == 2:
+                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0], exstring[1]])
+            elif exstring.__len__() == 3:
+                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0], exstring[1], exstring[2]])
+            elif exstring.__len__() == 4:
+                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0], exstring[1], exstring[2], exstring[3]])
 
 
 def checksettings():
