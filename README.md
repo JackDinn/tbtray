@@ -5,13 +5,13 @@
 I only built it because we did'nt have any TB tray integration after Thunderbird 60+. 
 Keep in mind im just a hobbyist. I'm doing this to try and learn a little about using git and github.
 
-**you will need xdotool, wmctrl, python-beautifulsoup4 & qt5-multimedia installed**
+**you will need xdotool, wmctrl, python-beautifulsoup4 & qt5-multimedia (or python3-pyqt5.qtmultimedia) installed**
 
-### ***sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia***
+### ***sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia (or python3-pyqt5.qtmultimedia)***
 
 If you are unsure how to install use these 3 commands in your terminal:-
 
-    >sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia
+    >sudo pacman -S wmctrl xdotool python-beautifulsoup4 $(pacman -Fsq QtMultimedia)
     ...
     >git clone https://github.com/JackDinn/tbtray.git
     ...

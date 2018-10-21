@@ -53,38 +53,6 @@ def getfavicon(url):
     #     return 'res/thunderbird.png'
 
 
-def checkdependencies():
-    missing = []
-    result = subprocess.run(["pacman", "-Qi", "xdotool", "qt5-multimedia", "wmctrl", "python-beautifulsoup4"], stdout=subprocess.PIPE)
-    stdout = result.stdout.decode('UTF-8')
-    out = re.search('Name.*xdotool', stdout)
-    if not out:
-        print('Please install xdotool > sudo pacman -S xdotool')
-        missing.append('xdotool')
-    out = re.search('Name.*wmctrl', stdout)
-    if not out:
-        print('Please install wmctrl > sudo pacman -S wmctrl')
-        missing.append('wmctrl')
-    out = re.search('Name.*qt5-multimedia', stdout)
-    if not out:
-        print('Please install qt5-multimedia > sudo pacman -S qt5-multimedia')
-        missing.append('qt5-multimedia')
-    out = re.search('Name.*python-beautifulsoup4', stdout)
-    if not out:
-        print('Please install python-beautifulsoup4 > sudo pacman -S python-beautifulsoup4')
-        missing.append('python-beautifulsoup4')
-    if missing:
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Warning)
-        msg.setText("Missing dependencies: " + ' ,'.join(missing))
-        msg.setInformativeText("Please Install them!")
-        msg.setWindowTitle("TBtray Dependency check")
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.setWindowFlags(Qt.WindowStaysOnTopHint)
-        msg.setDetailedText('Open a terminal and enter the following command:-\n\nsudo pacman -S ' + ' ,'.join(missing).replace(',', ''))
-        msg.exec_()
-
-
 def checksettings():
     my_dir = Path(str(Path.home()) + '/.config/tbtray')
     if not my_dir.is_dir(): my_dir.mkdir()
@@ -294,7 +262,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         checksettings()
-        checkdependencies()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
         self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
