@@ -9,8 +9,10 @@ Keep in mind im just a hobbyist. I'm doing this to try and learn a little about 
 
 ### ***sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia***
 
-If you are unsure use these 2 commands in your terminal (TBtray will do the rest):-
+If you are unsure how to install use these 3 commands in your terminal:-
 
+    >sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia
+    ...
     >git clone https://github.com/JackDinn/tbtray.git
     ...
     >tbtray/tbtray.py
@@ -45,6 +47,17 @@ example of INBOX.msf :-
 ![Popup window](https://i.imgur.com/0AnneUK.png)
 
 ![Basic Settings](https://i.imgur.com/lIJKRgZ.png)
+
+
+####General usage
+TBtray executes TB so i advise creating a launcher that runs TBtray to replace your TB launcher.
+
+You can close both TBtray and TB together via the tray icon.
+
+You can run TBtray after TB is already running and it will work but you may need to "synchronize" it by clicking the tray icon.
+
+I can not figure a way to intercept the TB close signal so i can not have TBtray minimize TB when you click close on TB. The best i can do is to close both TB and TBtray if you close TB.
+
 
 
 ###Removal of TBtray
