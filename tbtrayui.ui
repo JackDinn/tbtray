@@ -278,7 +278,7 @@
           <item>
            <widget class="QLabel" name="label_colour">
             <property name="text">
-             <string>Colour of notification font</string>
+             <string>Colour of unread count font</string>
             </property>
            </widget>
           </item>
