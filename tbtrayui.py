@@ -228,7 +228,7 @@ class Ui_Form(object):
         self.checkBox_favicons.setText(_translate("Form", "Show Mail Favicons"))
         self.checkbox_showcount.setText(_translate("Form", "Show unread Count"))
         self.pushButton_colourpicker.setText(_translate("Form", "Colour Picker"))
-        self.label_colour.setText(_translate("Form", "Colour of notification font"))
+        self.label_colour.setText(_translate("Form", "Colour of unread count font"))
         self.checkbox_minimizetotray.setText(_translate("Form", "Minimize to tray"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Form", "Genral"))
         self.groupBox.setTitle(_translate("Form", "Profile Path selector"))

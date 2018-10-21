@@ -5,16 +5,20 @@
 I only built it because we did'nt have any TB tray integration after Thunderbird 60+. 
 Keep in mind im just a hobbyist. I'm doing this to try and learn a little about using git and github.
 
-**you will need xdotool, wmctrl & qt5-multimedia installed**
+**you will need xdotool, wmctrl, python-beautifulsoup4 & qt5-multimedia (or python3-pyqt5.qtmultimedia) installed**
 
-### ***sudo pacman -S wmctrl xdotool qt5-multimedia***
+### ***sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia (or python3-pyqt5.qtmultimedia)***
 
-Then run it from inside the tbtray folder.
+If you are unsure how to install use these 3 commands in your terminal:-
 
-**./tbtray.py**
+    >sudo pacman -S wmctrl xdotool python-beautifulsoup4 $(pacman -Fsq QtMultimedia)
+    ...
+    >git clone https://github.com/JackDinn/tbtray.git
+    ...
+    >tbtray/tbtray.py
 
-All you need to do is run ./tbtray.py then select your INBOX.msf files for your accounts. 
-Find (or manually enter) the path to your INBOX.msf files in the top bar and click "add" to put them
+After installing and running TBtray select your INBOX.msf files for your accounts. 
+Find (or manually enter) the path to your INBOX.msf files in the top bar of the settings and click "add" to put them
 into your profile list box.
 
 example of INBOX.msf :-
@@ -44,3 +48,17 @@ example of INBOX.msf :-
 
 ![Basic Settings](https://i.imgur.com/lIJKRgZ.png)
 
+
+####General usage
+TBtray executes TB so i advise creating a launcher that runs TBtray to replace your TB launcher.
+
+You can close both TBtray and TB together via the tray icon.
+
+You can run TBtray after TB is already running and it will work but you may need to "synchronize" it by clicking the tray icon.
+
+I can not figure a way to intercept the TB close signal so i can not have TBtray minimize TB when you click close on TB. The best i can do is to close both TB and TBtray if you close TB.
+
+
+
+###Removal of TBtray
+just delete the tbtray folder and the settings folder found at ~/.config/tbtray

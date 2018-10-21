@@ -15,8 +15,9 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
 from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
+from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog, QMessageBox
 
+import pyfav
 import tbtrayui
 
 
@@ -26,31 +27,30 @@ def close():
 
 
 def getfavicon(url):
+    path = str(Path.home()) + '/.config/tbtray/icons/'
+    iconpath = path + url + '.ico'
+    if Path.is_file(Path(iconpath)):
+        return iconpath
     try:
-        path = str(Path.home()) + '/.config/tbtray/icons/'
-        iconpath = path + url + '.ico'
-        if Path.is_file(Path(iconpath)):
-            return iconpath
-        icon = urllib.request.urlopen('https://api.faviconkit.com/' + url + '/16')
+        favicon_url = pyfav.get_favicon_url('http://' + url)
+        icon = urllib.request.urlopen(favicon_url)
         with open(iconpath, "wb") as f:
             f.write(icon.read())
         return iconpath
     except:
         return 'res/thunderbird.png'
 
-
-def checkdependencies():
-    result = subprocess.run(["pacman", "-Qi", "xdotool", "qt5-multimedia", "wmctrl"], stdout=subprocess.PIPE)
-    stdout = result.stdout.decode('UTF-8')
-    out = re.search('Name.*xdotool', stdout)
-    if not out:
-        print('Please install xdotool > sudo pacman -S xdotool')
-    out = re.search('Name.*wmctrl', stdout)
-    if not out:
-        print('Please install wmctrl > sudo pacman -S wmctrl')
-    out = re.search('Name.*qt5-multimedia', stdout)
-    if not out:
-        print('Please install qt5-multimedia > sudo pacman -S qt5-multimedia')
+    # try:
+    #     path = str(Path.home()) + '/.config/tbtray/icons/'
+    #     iconpath = path + url + '.ico'
+    #     if Path.is_file(Path(iconpath)):
+    #         return iconpath
+    #     icon = urllib.request.urlopen('https://api.faviconkit.com/' + url + '/16')
+    #     with open(iconpath, "wb") as f:
+    #         f.write(icon.read())
+    #     return iconpath
+    # except:
+    #     return 'res/thunderbird.png'
 
 
 def checksettings():
@@ -138,6 +138,7 @@ class Popup(QtWidgets.QDialog):
         self.closebutton.setGeometry(304, 8, 20, 20)
         self.closebutton.setStyleSheet('color: red')
         self.closebutton.clicked.connect(self.clicked)
+        self.browsertext = ''
         self.favicons = True
         self.popupon = True
         self.sound = QSound("res/popup.wav")
@@ -157,17 +158,18 @@ class Popup(QtWidgets.QDialog):
     def fire(self, profiles, count=1, firstrun=False, testrun=False):
         if testrun:
             if self.popupon or self.sound:
-                self.textBrowser.clear()
-                xx = ''
+                if not self.isVisible():
+                    self.textBrowser.clear()
+                    self.browsertext = ''
                 reg = re.findall('@(\w*.[a-zA-Z0-9]*\.[a-zA-Z0-9]*)', 'fred@twitter.com')[0]
-                icon = getfavicon(reg)
                 for tt in range(3):
+                    icon = getfavicon(reg)
                     if self.favicons:
-                        xx += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;Twitter "info@twitter.com"</h3><p>This is a test message'
+                        self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;Twitter "info@twitter.com"</h3><p>This is a test message'
                     else:
-                        xx += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
+                        self.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
                 if self.popupon: self.show()
-                self.textBrowser.setText(xx)
+                self.textBrowser.setText(self.browsertext)
                 self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
                 if self.soundon: self.sound.play()
                 self.popup_timer.start(20000)
@@ -192,19 +194,20 @@ class Popup(QtWidgets.QDialog):
                     else: up += 1
                 for fr in mailinfo['messageid']: self.shownmessages.append(fr)
                 if not firstrun and len(mailinfo['messageid']) > 0:
-                    self.textBrowser.clear()
-                    vv = ''
+                    if not self.isVisible():
+                        self.textBrowser.clear()
+                        self.browsertext = ''
                     for x in range(len(mailinfo['messageid'])):
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         if self.favicons:
                             icon = getfavicon(re.findall('@(\w*.[a-zA-Z0-9]*\.[a-zA-Z0-9]*)', fromx)[0])
-                            vv += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
+                            self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
                         else:
-                            vv += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
+                            self.browsertext += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
-                    self.textBrowser.setText(vv)
+                    self.textBrowser.setText(self.browsertext)
                     self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
                     self.popup_timer.start(10000)
                     self.popup_timer2.start()
@@ -259,7 +262,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         checksettings()
-        # checkdependencies()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
         self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
@@ -460,6 +462,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(1000)
 
     def fire(self):
+        result = subprocess.run(["pgrep", "-i", "thunderbird"], stdout=subprocess.PIPE)
+        stdout = result.stdout.decode('UTF-8')
+        if not stdout: sys.exit()
         if self.badprofile:
             self.show()
             self.activateWindow()
