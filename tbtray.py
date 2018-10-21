@@ -77,23 +77,12 @@ def checkdependencies():
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Warning)
         msg.setText("Missing dependencies: " + ' ,'.join(missing))
-        msg.setInformativeText("Do you want to install them ?")
+        msg.setInformativeText("Please Install them!")
         msg.setWindowTitle("Dependency check")
-        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msg.setStandardButtons(QMessageBox.Ok)
         msg.setWindowFlags(Qt.WindowStaysOnTopHint)
-        retval = msg.exec_()
-        if retval == msg.Ok:
-            exstring = []
-            for hh in missing:
-                exstring.append(hh)
-            if exstring.__len__() == 1:
-                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0]])
-            elif exstring.__len__() == 2:
-                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0], exstring[1]])
-            elif exstring.__len__() == 3:
-                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0], exstring[1], exstring[2]])
-            elif exstring.__len__() == 4:
-                subprocess.run(["xterm", '-e', 'sudo', "pacman", "-S", exstring[0], exstring[1], exstring[2], exstring[3]])
+        msg.setDetailedText('go to terminal and enter the following command:-\n\nsudo pacman -S ' + ' ,'.join(missing).replace(',', ''))
+        msg.exec_()
 
 
 def checksettings():
@@ -302,7 +291,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.defaulticon = self.lineedit_defulticon.text()
         self.notifyicon = self.lineedit_notifyicon.text()
         checksettings()
-        # checkdependencies()
+        checkdependencies()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
         self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
