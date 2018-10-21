@@ -78,10 +78,10 @@ def checkdependencies():
         msg.setIcon(QMessageBox.Warning)
         msg.setText("Missing dependencies: " + ' ,'.join(missing))
         msg.setInformativeText("Please Install them!")
-        msg.setWindowTitle("Dependency check")
+        msg.setWindowTitle("TBtray Dependency check")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.setWindowFlags(Qt.WindowStaysOnTopHint)
-        msg.setDetailedText('go to terminal and enter the following command:-\n\nsudo pacman -S ' + ' ,'.join(missing).replace(',', ''))
+        msg.setDetailedText('Open a terminal and enter the following command:-\n\nsudo pacman -S ' + ' ,'.join(missing).replace(',', ''))
         msg.exec_()
 
 
