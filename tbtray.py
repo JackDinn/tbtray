@@ -246,7 +246,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-        os.system('thunderbird > /dev/null 2>&1 & disown')
+        os.system('thunderbird > /dev/null 2>&1')
         os.chdir(os.path.dirname(sys.argv[0]))
         self.my_settings_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
         self.matches = 0
