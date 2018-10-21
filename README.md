@@ -5,17 +5,14 @@
 I only built it because we did'nt have any TB tray integration after Thunderbird 60+. 
 Keep in mind im just a hobbyist. I'm doing this to try and learn a little about using git and github.
 
-**you will need xdotool, wmctrl, python-beautifulsoup4 & qt5-multimedia (or python3-pyqt5.qtmultimedia) installed**
+**you will need**
 
-### ***sudo pacman -S wmctrl xdotool python-beautifulsoup4 qt5-multimedia (or python3-pyqt5.qtmultimedia)*** ###
+* ***xdotool***
+* ***wmctrl*** [these 2 control the window manager]
+* ***python-beautifulsoup4*** [This is for the favicon scraping] 
+* ***qt5-multimedia (or python3-pyqt5.qtmultimedia)*** [One of these are for the sound]
 
-If you are unsure how to install use these 3 commands in your terminal:-
 
-    >sudo pacman -S wmctrl xdotool python-beautifulsoup4 $(pacman -Fsq QtMultimedia)
-    ...
-    >git clone https://github.com/JackDinn/tbtray.git
-    ...
-    >tbtray/tbtray.py
 
 After installing and running TBtray select your INBOX.msf files for your accounts. 
 Find (or manually enter) the path to your INBOX.msf files in the top bar of the settings and click "add" to put them
