@@ -1,6 +1,6 @@
 # TBtray #
 
-####A Thunderbird tray addon for linux (best on KDE)####
+#### A Thunderbird tray addon for linux (best on KDE) ####
 
 I only built it because we did'nt have any TB tray integration after Thunderbird 60+. 
 Keep in mind im just a hobbyist. I'm doing this to try and learn a little about using git and github.
@@ -49,7 +49,7 @@ example of INBOX.msf :-
 ![Basic Settings](https://i.imgur.com/lIJKRgZ.png)
 
 
-####General usage####
+#### General usage ####
 TBtray executes TB so i advise creating a launcher that runs TBtray to replace your TB launcher.
 
 You can close both TBtray and TB together via the tray icon.
@@ -60,5 +60,5 @@ I can not figure a way to intercept the TB close signal so i can not have TBtray
 
 
 
-###Removal of TBtray####
+### Removal of TBtray ###
 just delete the tbtray folder and the settings folder found at ~/.config/tbtray
