@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>697</width>
+    <width>840</width>
     <height>495</height>
    </rect>
   </property>
@@ -169,13 +169,33 @@
              </size>
             </property>
             <property name="suffix">
-             <string>px</string>
+             <string> px</string>
             </property>
             <property name="maximum">
              <number>10000</number>
             </property>
             <property name="value">
              <number>1585</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>   Display Time</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_displaytime">
+            <property name="suffix">
+             <string> sec's</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="value">
+             <number>10</number>
             </property>
            </widget>
           </item>

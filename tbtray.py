@@ -140,6 +140,7 @@ class Popup(QtWidgets.QDialog):
         self.closebutton.setGeometry(304, 8, 20, 20)
         self.closebutton.setStyleSheet('color: red')
         self.closebutton.clicked.connect(self.clicked)
+        self.duration = 10
         self.browsertext = ''
         self.favicons = True
         self.popupon = True
@@ -174,7 +175,7 @@ class Popup(QtWidgets.QDialog):
                 self.textBrowser.setText(self.browsertext)
                 self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
                 if self.soundon: self.sound.play()
-                self.popup_timer.start(20000)
+                self.popup_timer.start(self.duration * 1000)
                 self.popup_timer2.start()
                 return
 
@@ -211,7 +212,7 @@ class Popup(QtWidgets.QDialog):
                     if self.soundon: self.sound.play()
                     self.textBrowser.setText(self.browsertext)
                     self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
-                    self.popup_timer.start(10000)
+                    self.popup_timer.start(self.duration * 1000)
                     self.popup_timer2.start()
 
     @staticmethod
@@ -266,6 +267,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         checksettings()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
+        self.spinBox_displaytime.setValue(int(config['popup']['duration']))
         self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
         self.horizontalSlider_opacity.setValue(int(config['popup']['opacity']))
         self.checkBox_popup.setChecked(bool(int(config['popup']['on'])))
@@ -290,6 +292,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timersetup()
 
     def actionsetup(self):
+        self.popup.duration = self.spinBox_displaytime.value()
         self.popup.favicons = self.checkBox_favicons.isChecked()
         self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
         self.popup.xpos = self.spinBox_xpos.value()
@@ -389,11 +392,14 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.lineEdit_notifysound.setText(self.popup.sound.fileName())
         self.checkBox_notifysound.setChecked(self.popup.soundon)
         self.horizontalSlider_opacity.setValue(int(self.popup.windowOpacity()*100))
+        self.spinBox_displaytime.setValue(self.popup.duration)
         self.timetriggercheck.start(1000)
 
     def ok(self):
         config = configparser.ConfigParser()
         config['popup'] = {}
+        config['popup']['duration'] = str(self.spinBox_displaytime.value())
+        self.popup.duration = self.spinBox_displaytime.value()
         config['popup']['favicons'] = str(int(self.checkBox_favicons.isChecked()))
         self.popup.favicons = self.checkBox_favicons.isChecked()
         config['popup']['opacity'] = str(int(self.horizontalSlider_opacity.value()))

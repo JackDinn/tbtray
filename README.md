@@ -11,9 +11,9 @@ Keep in mind im just a hobbyist. I'm doing this to try and learn a little about 
     you will need to install these packages on your system first
 
     xdotool
-    wmctrl [these 2 control the window manager]
-    python-beautifulsoup4 (or python3-bs4) [One of these are for the favicon scraping] 
-    qt5-multimedia (or python3-pyqt5.qtmultimedia) [One of these are for the sound]
+    wmctrl                                          [these 2 control the window manager]
+    python3-bs4 (or python-beautifulsoup4)          [One of these are for the favicon scraping] 
+    python3-pyqt5.qtmultimedia (or qt5-multimedia)  [One of these are for the sound]
     
     Then clone the repo 
     git clone https://github.com/JackDinn/tbtray.git
@@ -43,6 +43,7 @@ example of INBOX.msf :-
 * Allow TBtray to take over the popup notification & sound from TB
 * You can also click on the popup notification to show the TB window
 * Set opacity of popup
+* popup duration control
 * Popup option to Show favicons alongside individual emails (these are scraped once & then cached locally)
 * Very low idle CPU & Memory.
 
@@ -52,7 +53,7 @@ example of INBOX.msf :-
 
 ![Popup window](https://i.imgur.com/0AnneUK.png)
 
-![Basic Settings](https://i.imgur.com/lIJKRgZ.png)
+![Basic Settings](https://i.imgur.com/4PiAi30.png)
 
 
 ### General usage ###
