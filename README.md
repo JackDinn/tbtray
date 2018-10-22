@@ -12,8 +12,8 @@ Keep in mind im just a hobbyist. I'm doing this to try and learn a little about 
 
     xdotool
     wmctrl [these 2 control the window manager]
-    python-beautifulsoup4 (or python3-bs4)*** [One of these are for the favicon scraping] 
-    qt5-multimedia (or python3-pyqt5.qtmultimedia)*** [One of these are for the sound]
+    python-beautifulsoup4 (or python3-bs4) [One of these are for the favicon scraping] 
+    qt5-multimedia (or python3-pyqt5.qtmultimedia) [One of these are for the sound]
     
     Then clone the repo 
     git clone https://github.com/JackDinn/tbtray.git
