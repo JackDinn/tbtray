@@ -6,7 +6,7 @@ I only built it because we did'nt have any TB tray integration after Thunderbird
 Keep in mind im just a hobbyist. I'm doing this to try and learn a little about using git and github.
 
 
-## Instlation ##
+## Installation ##
 
     you will need to install these packages on your system first
 
