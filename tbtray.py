@@ -15,7 +15,7 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
 from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog, QMessageBox
+from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
 
 import pyfav
 import tbtrayui
@@ -93,11 +93,13 @@ def readmessage(path, count=1):
         for w in date:
             date_text.append(w)
         for x in fromx:
-            xx = str(x).replace('<', '"')
-            xx = str(xx).replace('>', '"')
+            xx = str(x).replace('<', '&lt;')
+            xx = str(xx).replace('>', '&gt;')
             from_text.append(xx)
         for tt in subject:
-            subject_text.append(tt)
+            xy = str(tt).replace('<', '&lt;')
+            xy = str(xy).replace('>', '&gt;')
+            subject_text.append(xy)
     return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
 
 
@@ -165,7 +167,7 @@ class Popup(QtWidgets.QDialog):
                 for tt in range(3):
                     icon = getfavicon(reg)
                     if self.favicons:
-                        self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;Twitter "info@twitter.com"</h3><p>This is a test message'
+                        self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;Twitter &lt;binfo@twitter.com&gt;</h3><p>This is a test message'
                     else:
                         self.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
                 if self.popupon: self.show()
@@ -246,7 +248,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-        os.system('thunderbird > /dev/null 2>&1 & disown')
+        os.system('thunderbird > /dev/null 2>&1 &')
         os.chdir(os.path.dirname(sys.argv[0]))
         self.my_settings_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
         self.matches = 0
