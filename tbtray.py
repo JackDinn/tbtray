@@ -10,14 +10,16 @@ import sys
 import urllib.request
 from pathlib import Path
 from shutil import copyfile
+from urllib.parse import urlparse
 
+import requests
 from PyQt5 import QtGui, QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
 from PyQt5.QtMultimedia import QSound
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
+from bs4 import BeautifulSoup
 
-import pyfav
 import tbtrayui
 
 
@@ -26,13 +28,49 @@ def close():
     sys.exit(0)
 
 
+def parse_markup_for_favicon(markup, url):
+    parsed_site_uri = urlparse(url)
+    soup = BeautifulSoup(markup, features="html5lib")
+    icon_link = soup.find('link', rel='icon')
+    if icon_link and icon_link.has_attr('href'):
+        favicon_url = icon_link['href']
+        if favicon_url.startswith('//'):
+            parsed_uri = urlparse(url)
+            favicon_url = parsed_uri.scheme + ':' + favicon_url
+        elif favicon_url.startswith('/'):
+            favicon_url = parsed_site_uri.scheme + '://' + parsed_site_uri.netloc + favicon_url
+        elif not favicon_url.startswith('http'):
+            path, filename = os.path.split(parsed_site_uri.path)
+            favicon_url = parsed_site_uri.scheme + '://' + parsed_site_uri.netloc + '/' + os.path.join(path, favicon_url)
+        return favicon_url
+    return None
+
+
+def get_favicon_url(url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'}
+    parsed_site_uri = urlparse(url)
+    try:
+        response = requests.get(url, headers=headers)
+    except:
+        raise Exception("Unable to find URL. Is it valid? %s" % url)
+    if response.status_code == requests.codes.ok:
+        favicon_url = parse_markup_for_favicon(response.content, url)
+        if favicon_url:
+            return favicon_url
+    favicon_url = '{uri.scheme}://{uri.netloc}/favicon.ico'.format(uri=parsed_site_uri)
+    response = requests.get(favicon_url, headers=headers)
+    if response.status_code == requests.codes.ok:
+        return favicon_url
+    return None
+
+
 def getfavicon(url):
     path = str(Path.home()) + '/.config/tbtray/icons/'
     iconpath = path + url + '.ico'
     if Path.is_file(Path(iconpath)):
         return iconpath
     try:
-        favicon_url = pyfav.get_favicon_url('http://' + url)
+        favicon_url = get_favicon_url('http://' + url)
         icon = urllib.request.urlopen(favicon_url)
         with open(iconpath, "wb") as f:
             f.write(icon.read())
@@ -119,7 +157,7 @@ class TextBrowser(QtWidgets.QTextBrowser):
 
     def mouseReleaseEvent(self, event):
         subprocess.run(["xdotool", "windowmap", self.windowid])
-        subprocess.run(['wmctrl', '-r', 'Mozilla Thunderbird', '-b', 'remove,skip_taskbar'])
+        subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
         subprocess.run(["xdotool", "windowactivate", self.windowid])
         self.INTRAY = True
 
@@ -178,7 +216,6 @@ class Popup(QtWidgets.QDialog):
                 self.popup_timer.start(self.duration * 1000)
                 self.popup_timer2.start()
                 return
-
         if self.popupon or self.sound:
             popprofiles = []
             fileexists = False
@@ -350,7 +387,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def func_minimizetotrayclicked(self):
         if not self.checkbox_minimizetotray.isChecked():
-            subprocess.run(['wmctrl', '-r', 'Mozilla thunderbird', '-b', 'remove,skip_taskbar'])
+            subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
 
     def func_pushbutton_add(self):
         self.listWidget.addItem(self.editline_profilepath.text())
@@ -449,7 +486,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.INTRAY = True
             else:
                 subprocess.run(["xdotool", "windowmap", self.windowid])
-                subprocess.run(['wmctrl', '-r', 'Mozilla Thunderbird', '-b', 'remove,skip_taskbar'])
+                subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
                 self.INTRAY = False
             self.timetriggercheck.start(1000)
@@ -464,7 +501,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.INTRAY = True
             else:
                 subprocess.run(["xdotool", "windowmap", self.windowid])
-                subprocess.run(['wmctrl', '-r', 'Mozilla thunderbird', '-b', 'remove,skip_taskbar'])
+                subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
                 self.INTRAY = False
             self.timetriggercheck.start(1000)
@@ -487,9 +524,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
             stdout = result.stdout.decode('UTF-8')
             if not stdout and self.windowid:
-                subprocess.run(['wmctrl', '-r', 'Mozilla thunderbird', '-b', 'add,skip_taskbar'])
+                subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
-            else:
+            elif not self.windowid:
                 self.windowid = result.stdout.decode('UTF-8')
                 self.popup.textBrowser.windowid = self.windowid
         for profile in self.profiles:

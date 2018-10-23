@@ -466,7 +466,7 @@
       <item>
        <widget class="QToolButton" name="toolButton_firepopup">
         <property name="toolTip">
-         <string extracomment="Popup Test Fire"/>
+         <string extracomment="Popup Test Fire">test popup</string>
         </property>
         <property name="statusTip">
          <string extracomment="Popup Test Fire"/>
