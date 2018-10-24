@@ -120,8 +120,7 @@ def readmessage(path, count=1):
     messageid_text = []
     for gg in path:
         if not os.path.isfile(gg): continue
-        tex = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE)
-        text = tex.stdout.decode('UTF-8')
+        text = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE).stdout.decode('UTF-8')
         fromx = re.findall('\\r\\nFrom: (.*@.*)\\r\\n', text)[(0 - count):]
         subject = re.findall('\\r\\nSubject: (.*)\\r\\n', text)[0 - count:]
         date = re.findall('\\r\\nDate: (.*)\\r\\n', text)[0-count:]
@@ -146,11 +145,11 @@ class TextBrowser(QtWidgets.QTextBrowser):
         super(TextBrowser, self).__init__(parent)
         self.windowid = 0
         self.INTRAY = False
+        self.hideme = False
         self.height = 100
         self.document().contentsChanged.connect(self.sizechange)
 
     def sizechange(self):
-
         docheight = self.document().size().height()
         self.height = int(docheight)
         self.setGeometry(5, 5, 322, self.height + 10)
@@ -159,6 +158,7 @@ class TextBrowser(QtWidgets.QTextBrowser):
         subprocess.run(["xdotool", "windowmap", self.windowid])
         subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
         subprocess.run(["xdotool", "windowactivate", self.windowid])
+        self.hideme = True
         self.INTRAY = True
 
 
@@ -269,8 +269,9 @@ class Popup(QtWidgets.QDialog):
             return 'Could Not decode Subject string'
 
     def timer2(self):
-        if self.textBrowser.INTRAY:
+        if self.textBrowser.hideme:
             self.popup_timer2.stop()
+            self.textBrowser.hideme = False
             self.hide()
 
     def timer(self):
@@ -479,8 +480,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def iconclick(self):
         if self.checkbox_minimizetotray.isChecked() and not self.badprofile:
             self.timetriggercheck.stop()
-            result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
-            stdout = result.stdout.decode('UTF-8')
+            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
@@ -494,8 +494,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def iconmenushowhide(self):
         if not self.badprofile:
             self.timetriggercheck.stop()
-            result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
-            stdout = result.stdout.decode('UTF-8')
+            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
@@ -507,8 +506,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(1000)
 
     def fire(self):
-        result = subprocess.run(["pgrep", "-i", "thunderbird"], stdout=subprocess.PIPE)
-        stdout = result.stdout.decode('UTF-8')
+        stdout = subprocess.run(["pgrep", "-i", "thunderbird"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
         if not stdout: sys.exit()
         if self.badprofile:
             self.show()
@@ -520,23 +518,25 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         if self.popup.textBrowser.INTRAY:
             self.INTRAY = False
             self.popup.textBrowser.INTRAY = False
+        if not self.windowid:
+            stdout = subprocess.run(["wmctrl", '-lx'], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            idx = re.findall('(\dx\w+)..0 Mail\.Thunderbird', str(stdout))
+            if idx:
+                self.windowid = idx[0]
+                self.popup.textBrowser.windowid = self.windowid
+                print('grabbed window ' + idx[0])
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
-            result = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE)
-            stdout = result.stdout.decode('UTF-8')
+            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if not stdout and self.windowid:
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
-            elif not self.windowid:
-                self.windowid = result.stdout.decode('UTF-8')
-                self.popup.textBrowser.windowid = self.windowid
         for profile in self.profiles:
             if os.path.getmtime(profile) > self.lastmtime:
                 self.lastmtime = os.path.getmtime(profile)
                 self.matches = 0
                 for profile2 in self.profiles:
                     if not os.path.isfile(profile2): continue
-                    tex = subprocess.run(["tail", "-n", "2000", profile2], stdout=subprocess.PIPE)
-                    filetext = tex.stdout.decode('UTF-8')
+                    filetext = subprocess.run(["tail", "-n", "2000", profile2], stdout=subprocess.PIPE).stdout.decode('UTF-8')
                     matchesx = re.findall('\^A2=(\w+)', filetext)
                     if matchesx: self.matches += int(matchesx[-1], 16)
                 if self.matches > 0:
