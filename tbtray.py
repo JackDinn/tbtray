@@ -202,7 +202,7 @@ class Popup(QtWidgets.QDialog):
                 if not self.isVisible():
                     self.textBrowser.clear()
                     self.browsertext = ''
-                reg = re.findall('@(\w*.[a-zA-Z0-9]*\.[a-zA-Z0-9]*)', 'fred@twitter.com')[0]
+                reg = re.findall('@(.*\.[a-zA-Z0-9]*\.*[a-zA-Z0-9]*)', 'fred@twitter.com')[0]
                 for tt in range(3):
                     icon = getfavicon(reg)
                     if self.favicons:
@@ -241,7 +241,7 @@ class Popup(QtWidgets.QDialog):
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         if self.favicons:
-                            icon = getfavicon(re.findall('@(\w*.[a-zA-Z0-9]*\.[a-zA-Z0-9]*)', fromx)[0])
+                            icon = getfavicon(re.findall('@(.*\.[a-zA-Z0-9]*\.*[a-zA-Z0-9]*)', fromx)[0])
                             self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
                         else:
                             self.browsertext += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
@@ -255,15 +255,15 @@ class Popup(QtWidgets.QDialog):
     @staticmethod
     def encoded_words_to_text(encoded_words):
         byte_string = ''
-        encoded_word_regex = r'=\?{1}(.+)\?{1}([B|Q|b|q])\?{1}(.+)\?{1}='
+        encoded_word_regex = r'(.*)=\?{1}(.+)\?{1}([B|Q|b|q])\?{1}(.+)\?{1}=(.*)'
         if not re.match(encoded_word_regex, encoded_words): return encoded_words
-        charset, encoding, encoded_text = re.match(encoded_word_regex, encoded_words).groups()
+        front, charset, encoding, encoded_text, back = re.match(encoded_word_regex, encoded_words).groups()
         try:
             if encoding is 'B'or encoding is 'b':
                 byte_string = base64.b64decode(encoded_text)
             elif encoding is 'Q' or encoding is 'q':
                 byte_string = quopri.decodestring(encoded_text)
-            if byte_string: return byte_string.decode(charset)
+            if byte_string: return front + byte_string.decode(charset) + back
         except:
             print('def encoded_words_to_text:  LookupError: unknown encoding')
             return 'Could Not decode Subject string'
