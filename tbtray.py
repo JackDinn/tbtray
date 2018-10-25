@@ -380,6 +380,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
+        if self.badprofile: self.tray_icon.showMessage('TBtray Profile Warning', 'Please setup account profiles', QSystemTrayIcon.Critical)
         self.popup.fire(self.profiles, 10, True)
 
     def func_toolbutton_firepopup(self):

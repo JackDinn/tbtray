@@ -65,6 +65,7 @@ You can run TBtray after TB is already running and it will work but you may need
 
 I can not figure a way to intercept the TB close signal so i can not have TBtray minimize TB when you click close on TB. The best i can do is to close both TB and TBtray if you close TB.
 
+TBtray (PyQt5) does not seem to work well on Wayland.
 
 
 ### Removal of TBtray ###
