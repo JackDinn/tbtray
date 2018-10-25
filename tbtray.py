@@ -19,6 +19,7 @@ from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
 from PyQt5.QtMultimedia import QSound
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
 from bs4 import BeautifulSoup
+from time import strftime
 
 import tbtrayui
 
@@ -29,9 +30,10 @@ def close():
 
 
 def log(tex=''):
-    qq = open('log.txt', 'a+')
-    qq.write(tex + '\n')
-    qq.close()
+    return
+    tim = strftime("%y-%m-%d %H:%M:%S")
+    with open('log.txt', 'a+') as qq:
+        qq.write(tim + ' ' + tex + '\n')
     return
 
 
@@ -84,6 +86,7 @@ def getfavicon(url):
             f.write(icon.read())
         return iconpath
     except:
+        log('Cant get icon from that URL!')
         return 'res/thunderbird.png'
 
     # try:
@@ -301,6 +304,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         os.system('thunderbird > /dev/null 2>&1 &')
         os.chdir(os.path.dirname(sys.argv[0]))
         self.my_settings_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
+        log('')
+        log('TBtray started ################################################ ')
         self.matches = 0
         self.lastmtime = 0
         self.timetriggercheck = QTimer(self)
@@ -341,6 +346,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timersetup()
 
     def actionsetup(self):
+        self.label_accountwarrning.setText('')
         self.popup.duration = self.spinBox_displaytime.value()
         self.popup.favicons = self.checkBox_favicons.isChecked()
         self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
@@ -374,7 +380,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
-        self.popup.fire(self.profiles, 1, False)
+        self.popup.fire(self.profiles, 10, True)
 
     def func_toolbutton_firepopup(self):
         self.popup.fire(self.profiles, 2, False, True)
@@ -403,25 +409,27 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def func_pushbutton_add(self):
         self.listWidget.addItem(self.editline_profilepath.text())
+        self.testforprofile()
 
     def func_pushbutton_remove(self):
         self.listWidget.takeItem(self.listWidget.currentRow())
+        self.testforprofile()
 
     def testforprofile(self):
-        if not self.profiles:
-            self.editline_profilepath.setText("Please check your profile paths")
-            self.badprofile = True
-            return
         try:
-            for value in self.profiles:
-                vv = open(value, 'r')
+            if self.listWidget.count() == 0: raise Exception()
+            for value in range(self.listWidget.count()):
+                vv = open(self.listWidget.item(value).text(), 'r')
                 vv.close()
             self.lastmtime = 0
-            self.editline_profilepath.setText('Profiles look OK')
+            self.label_accountwarrning.hide()
             self.badprofile = False
-        except (IsADirectoryError, FileNotFoundError):
+        except:
+            self.label_accountwarrning.setText('ERROR! Please Fix Account List')
+            self.label_accountwarrning.setStyleSheet('color: red')
+            self.tabWidget.setCurrentIndex(1)
+            self.label_accountwarrning.show()
             self.badprofile = True
-            self.editline_profilepath.setText("Please check your profile paths")
 
     def timersetup(self):
         self.timetriggercheck.timeout.connect(self.fire)
@@ -479,7 +487,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         with open(self.my_settings_file, 'w') as configfile:
             config.write(configfile)
             configfile.close()
-        self.testforprofile()
         self.fire()
         self.hide()
         self.timetriggercheck.start(1000)
@@ -520,10 +527,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         stdout = subprocess.run(["pgrep", "-i", "thunderbird"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
         if not stdout: sys.exit()
         if self.badprofile:
-            self.show()
-            self.activateWindow()
+            self.label_accountwarrning.setText('ERROR! Please Fix Account List')
+            self.label_accountwarrning.setStyleSheet('color: red')
+            self.label_accountwarrning.show()
             self.tabWidget.setCurrentIndex(1)
-            self.timetriggercheck.start(5000)
             return
         self.timetriggercheck.stop()
         if self.popup.textBrowser.INTRAY:
