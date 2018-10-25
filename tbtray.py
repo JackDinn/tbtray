@@ -28,6 +28,13 @@ def close():
     sys.exit(0)
 
 
+def log(tex=''):
+    qq = open('log.txt', 'a+')
+    qq.write(tex + '\n')
+    qq.close()
+    return
+
+
 def parse_markup_for_favicon(markup, url):
     parsed_site_uri = urlparse(url)
     soup = BeautifulSoup(markup, features="html5lib")
@@ -71,6 +78,7 @@ def getfavicon(url):
         return iconpath
     try:
         favicon_url = get_favicon_url('http://' + url)
+        log('favicon URL ' + favicon_url)
         icon = urllib.request.urlopen(favicon_url)
         with open(iconpath, "wb") as f:
             f.write(icon.read())
@@ -202,7 +210,7 @@ class Popup(QtWidgets.QDialog):
                 if not self.isVisible():
                     self.textBrowser.clear()
                     self.browsertext = ''
-                reg = re.findall('@(.*\.[a-zA-Z0-9]*\.*[a-zA-Z0-9]*)', 'fred@twitter.com')[0]
+                reg = re.findall('@(.*?\.[a-zA-Z]*\.*[a-zA-Z]*)', 'fred@twitter.com')[0]
                 for tt in range(3):
                     icon = getfavicon(reg)
                     if self.favicons:
@@ -239,9 +247,12 @@ class Popup(QtWidgets.QDialog):
                         self.browsertext = ''
                     for x in range(len(mailinfo['messageid'])):
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
+                        log('from ' + fromx)
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         if self.favicons:
-                            icon = getfavicon(re.findall('@(.*\.[a-zA-Z0-9]*\.*[a-zA-Z0-9]*)', fromx)[0])
+                            fav = re.findall('@(.*?\.[a-zA-Z]*\.*[a-zA-Z]*)', fromx)[0]
+                            log('get favicon ' + fav)
+                            icon = getfavicon(fav)
                             self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
                         else:
                             self.browsertext += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
@@ -363,7 +374,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.toolButton_notifyicon.clicked.connect(self.func_notifyicon)
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
-        self.popup.fire(self.profiles, 10, True)
+        self.popup.fire(self.profiles, 1, False)
 
     def func_toolbutton_firepopup(self):
         self.popup.fire(self.profiles, 2, False, True)
