@@ -489,6 +489,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             config.write(configfile)
             configfile.close()
         self.hide()
+        self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
         self.timetriggercheck.start(1000)
         self.popup.fire(self.profiles, 10, True)
 
