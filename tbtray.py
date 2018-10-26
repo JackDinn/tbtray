@@ -488,9 +488,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         with open(self.my_settings_file, 'w') as configfile:
             config.write(configfile)
             configfile.close()
-        self.fire()
         self.hide()
         self.timetriggercheck.start(1000)
+        self.popup.fire(self.profiles, 10, True)
 
     def settings(self):
         self.timetriggercheck.stop()
