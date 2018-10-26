@@ -397,11 +397,11 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.colour_pre = x.name()
 
     def func_defaulticon(self):
-        x = QFileDialog.getOpenFileName(self, 'Select Default Icon', 'res/')[0]
+        x = QFileDialog.getOpenFileName(self, 'Select Default Icon', 'res/', "Icons .png .ico .svg (*.png *.ico *.svg)")[0]
         if x: self.lineedit_defulticon.setText(x)
 
     def func_notifyicon(self):
-        x = QFileDialog.getOpenFileName(self, 'Select Notify Icon', 'res/')[0]
+        x = QFileDialog.getOpenFileName(self, 'Select Notify Icon', 'res/', "Icons .png .ico .svg (*.png *.ico *.svg)")[0]
         if x: self.lineedit_notifyicon.setText(x)
 
     def func_minimizetotrayclicked(self):
