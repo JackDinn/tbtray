@@ -260,9 +260,9 @@ class Popup(QtWidgets.QDialog):
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         if self.favicons:
-                            fromx = fromx + '&'
-                            log('from ' + fromx)
-                            fav = re.findall('@\S*?\.?([\w|-]*(\.\w{2,3})?\.\w{2,3})&', fromx)
+                            fromxy = fromx + '&'
+                            log('from ' + fromxy)
+                            fav = re.findall('@\S*?\.?([\w|-]*(\.\w{2,3})?\.\w{2,3})&', fromxy)
                             if len(fav) > 0:
                                 log('get favicon ' + fav[0][0])
                                 icon = getfavicon(fav[0][0])
