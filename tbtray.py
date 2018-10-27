@@ -77,12 +77,29 @@ def getfavicon(url):
     path = str(Path.home()) + '/.config/tbtray/icons/'
     iconpath = path + url + '.ico'
     if Path.is_file(Path(iconpath)):
+        log('Local icon ' + iconpath)
         return iconpath
     try:
         log('favicon URL https://www.google.com/s2/favicons?domain=' + url)
-        icon = urllib.request.urlopen('https://www.google.com/s2/favicons?domain=' + url)
+        data = urllib.request.urlopen('https://www.google.com/s2/favicons?domain=' + url)
+        icon = data.read()
+        if icon == b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\x00\x00\x00\x1f' \
+                b'\xf3\xffa\x00\x00\x01\xb3IDATx\x01b\xf8\xff\xff?E\x18\xce\xf0\x8b\x9c\xc7\xe9\xe8;C\xb6\xaai[PI\xed\xe6\xbd\xc9\xb9' \
+                b'\xab>\x86\xc4\x03\xe8\xa6\x86\xed\xda\x82(\xf81\xefc\xde\xf4b\x18\xdb\xb6\xedd\x1a\xdb\xb6m\xdb\xb6m\';]\x83\xee\xd5W{' \
+                b'\xad\xe3\xaa\xda\xaaS\xf8\x83\xc3\xd2\xb9\xf2\xc1+\xb8\xa9\'\x80}\x03\x06X\xce\x13\xe4\xff\xaa\xac\x7f.~\xf5\xf1\x16N\x15' \
+                b'\xab1\xc9\xdd\xd7E\xb5\xb3\x94S1E\xb8\x0eO\x1fPX\\\xc7\xb5\x99C\xf9\xaa\x8bo]<\xb0\xe0\x08\x01\xa8\xba\xf8\xd6\xc7[\xb9T\x1d' \
+                b'\xa6d\x0cRm\xfb\nu\x0cn\xd1\xd5\xdd\x1b\xed\x9f<\x10\xe2\xf4\xf2\x85\xf0\x8e\x89\x1c:\xfb\xd4\xc5\x83#\x04P\x9a\x99c\xf9*2\x81' \
+                b'\x8c\xa3\xa9g\x1d\x87\x10\xf8\xfe!\xea\x1d\xdb\xa5>v\x98:\x94\xad\x82#\x04\xd0\x1fJ\x04\x08d\xf9xx\xfe"\x04\xaex\x9e_=\xa3\xe0' \
+                b'\xe8\xf6k\xcf\xa0\xc6\x1e!\x80!!;@\xfa\xc8\xbc\x82\x95\xad+\xc2{`\xcd\x1d+\x1e\x84\x80\xda\xb4\xe0gk\xff\x8e\x10\xe8\x13@N\x96' \
+                b'\x03-@\x00X\x95q\xfe\x8f\x86\x00\x86\xc4K\xe5\x03\xd4\'\x80\xb9@@)\x0b\xb0\xd5\xa1\x05\x92\x03\xcf\xfc\xe0\xe2\x08&\x8cw\xd8\xc6' \
+                b'\x83\xc6\x10\xc3\xd9\x10%\xbe\xce<&\x16N\x88\x87_x\xcb\xb5G`c\x8f\xbcF%L\x02eC\x0280H`L\xec\xd9\x1a#Z\x95\x1aF\x82\xc3\x98\x17\x0ee' \
+                b'\x11\xf4\xca\xc9\xb8\x1f\x06\xd9\xaeL\xd7H\xdc\xca\xceL\x04&a\xff\xc35\xc00\r\xec\x9cV4N\x81\x91m\xd7\xc8\x0c\xb2\x8e\x95\xe5' \
+                b'\x9f\t\xa5\xc1$\xd8\xb3\xca\xa4\xe0\x07\xd3\xfe\x1b(\xc0\x80b{\xaa\x9b\xb7\x078a\xc9L\x14a\x00BM\xf5\xdf\xed\xe70\xb1\x00\x00' \
+                b'\x00\x00IEND\xaeB`\x82':
+            copyfile('res/thunderbird.png', iconpath)
+            return 'res/thunderbird.png'
         with open(iconpath, "wb") as f:
-            f.write(icon.read())
+            f.write(icon)
         return iconpath
     except:
         log('Failed google scrape ' + url)
@@ -139,7 +156,7 @@ def readmessage(path, count=1):
     messageid_text = []
     for gg in path:
         if not os.path.isfile(gg): continue
-        text = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+        text = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE).stdout.decode('UTF-8', "ignore")
         fromx = re.findall('\\r\\nFrom: (.*@.*)\\r\\n', text)[(0 - count):]
         subject = re.findall('\\r\\nSubject: (.*)\\r\\n', text)[0 - count:]
         date = re.findall('\\r\\nDate: (.*)\\r\\n', text)[0-count:]
@@ -225,7 +242,7 @@ class Popup(QtWidgets.QDialog):
                 log('icon ' + icon)
                 for tt in range(2):
                     if self.favicons:
-                        self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;Twitter &lt;binfo@twitter.com&gt;</h3><p>This is a test message'
+                        self.browsertext += '<h3 style="color: DodgerBlue"><img height="20" width="20" src="' + icon + '"/>&nbsp;&nbsp;Twitter &lt;binfo@twitter.com&gt;</h3><p>This is a test message'
                     else:
                         self.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
                 if self.popupon: self.show()
@@ -257,8 +274,12 @@ class Popup(QtWidgets.QDialog):
                         self.textBrowser.clear()
                         self.browsertext = ''
                     for x in range(len(mailinfo['messageid'])):
+                        log('Scraped from ' + mailinfo['from'][x - 1])
+                        log('Scraped subj ' + mailinfo['subject'][x - 1])
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
+                        log('decoded from ' + fromx)
+                        log('decoded subj ' + subject)
                         if self.favicons:
                             fromxy = fromx + '&'
                             log('from ' + fromxy)
@@ -267,7 +288,7 @@ class Popup(QtWidgets.QDialog):
                                 log('get favicon ' + fav[0][0])
                                 icon = getfavicon(fav[0][0])
                             else: icon = 'res/thunderbird.png'
-                            self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
+                            self.browsertext += '<h3 style="color: DodgerBlue"><img height="20" width="20" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
                         else:
                             self.browsertext += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
                     if self.popupon: self.show()
