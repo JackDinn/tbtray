@@ -85,7 +85,7 @@ def getfavicon(url):
             f.write(icon.read())
         return iconpath
     except:
-        log('failed google scrape ' + url)
+        log('Failed google scrape ' + url)
     try:
         favicon_url = get_favicon_url('http://' + url)
         log('favicon URL ' + favicon_url)
