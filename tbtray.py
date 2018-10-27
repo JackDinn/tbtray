@@ -79,6 +79,14 @@ def getfavicon(url):
     if Path.is_file(Path(iconpath)):
         return iconpath
     try:
+        log('favicon URL https://www.google.com/s2/favicons?domain=' + url)
+        icon = urllib.request.urlopen('https://www.google.com/s2/favicons?domain=' + url)
+        with open(iconpath, "wb") as f:
+            f.write(icon.read())
+        return iconpath
+    except:
+        log('failed google scrape ' + url)
+    try:
         favicon_url = get_favicon_url('http://' + url)
         log('favicon URL ' + favicon_url)
         icon = urllib.request.urlopen(favicon_url)
@@ -86,7 +94,7 @@ def getfavicon(url):
             f.write(icon.read())
         return iconpath
     except:
-        log('Cant get icon from that URL!')
+        log('failed local func scrape ' + url)
         return 'res/thunderbird.png'
 
     # try:
@@ -213,9 +221,9 @@ class Popup(QtWidgets.QDialog):
                 if not self.isVisible():
                     self.textBrowser.clear()
                     self.browsertext = ''
-                reg = re.findall('@(.*?\.[a-zA-Z]*\.*[a-zA-Z]*)', 'fred@twitter.com')[0]
-                for tt in range(3):
-                    icon = getfavicon(reg)
+                icon = 'res/thunderbird.png'
+                log('icon ' + icon)
+                for tt in range(2):
                     if self.favicons:
                         self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;Twitter &lt;binfo@twitter.com&gt;</h3><p>This is a test message'
                     else:
@@ -250,12 +258,15 @@ class Popup(QtWidgets.QDialog):
                         self.browsertext = ''
                     for x in range(len(mailinfo['messageid'])):
                         fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
-                        log('from ' + fromx)
                         subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
                         if self.favicons:
-                            fav = re.findall('@(.*?\.[a-zA-Z]*\.*[a-zA-Z]*)', fromx)[0]
-                            log('get favicon ' + fav)
-                            icon = getfavicon(fav)
+                            fromx = fromx + '&'
+                            log('from ' + fromx)
+                            fav = re.findall('@\S*?\.?([\w|-]*(\.\w{2,3})?\.\w{2,3})&', fromx)
+                            if len(fav) > 0:
+                                log('get favicon ' + fav[0][0])
+                                icon = getfavicon(fav[0][0])
+                            else: icon = 'res/thunderbird.png'
                             self.browsertext += '<h3 style="color: DodgerBlue"><img height="30" width="30" src="' + icon + '"/>&nbsp;&nbsp;' + fromx + '</h3><p>' + subject
                         else:
                             self.browsertext += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
@@ -533,6 +544,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.label_accountwarrning.setStyleSheet('color: red')
             self.label_accountwarrning.show()
             self.tabWidget.setCurrentIndex(1)
+            self.tray_icon.showMessage('TBtray Profile Warning', 'Please setup account profiles', QSystemTrayIcon.Critical)
+            self.timetriggercheck.start(15000)
             return
         self.timetriggercheck.stop()
         if self.popup.textBrowser.INTRAY:
