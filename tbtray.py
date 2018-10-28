@@ -96,7 +96,7 @@ def getfavicon(url):
                 b'\x11\xf4\xca\xc9\xb8\x1f\x06\xd9\xaeL\xd7H\xdc\xca\xceL\x04&a\xff\xc35\xc00\r\xec\x9cV4N\x81\x91m\xd7\xc8\x0c\xb2\x8e\x95\xe5' \
                 b'\x9f\t\xa5\xc1$\xd8\xb3\xca\xa4\xe0\x07\xd3\xfe\x1b(\xc0\x80b{\xaa\x9b\xb7\x078a\xc9L\x14a\x00BM\xf5\xdf\xed\xe70\xb1\x00\x00' \
                 b'\x00\x00IEND\xaeB`\x82':
-            copyfile('res/thunderbird.png', iconpath)
+            os.symlink(os.getcwd() + '/res/thunderbird.png', iconpath)
             return 'res/thunderbird.png'
         with open(iconpath, "wb") as f:
             f.write(icon)
