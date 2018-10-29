@@ -32,6 +32,7 @@ example of INBOX.msf :-
 
 
 #### **_You can not use the unified (Smart-mail) inbox._** ####
+This does not mean you can not use the unified mail box with Thunderbird, just that you will need to setup each account individually in TBtray.
 
 
 #### Features :- ####
