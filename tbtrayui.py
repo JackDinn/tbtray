@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(840, 495)
+        Form.resize(945, 482)
         icon = QtGui.QIcon.fromTheme("thunderbird")
         Form.setWindowIcon(icon)
         Form.setLayoutDirection(QtCore.Qt.LeftToRight)
@@ -75,6 +75,9 @@ class Ui_Form(object):
         self.checkBox_popup = QtWidgets.QCheckBox(self.frame_4)
         self.checkBox_popup.setObjectName("checkBox_popup")
         self.horizontalLayout_7.addWidget(self.checkBox_popup)
+        self.checkBox_fixedwidth = QtWidgets.QCheckBox(self.frame_4)
+        self.checkBox_fixedwidth.setObjectName("checkBox_fixedwidth")
+        self.horizontalLayout_7.addWidget(self.checkBox_fixedwidth)
         self.label_3 = QtWidgets.QLabel(self.frame_4)
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_7.addWidget(self.label_3)
@@ -239,6 +242,8 @@ class Ui_Form(object):
         self.checkBox_notifysound.setText(_translate("Form", "On/Off"))
         self.toolButton_notifysound.setText(_translate("Form", "..."))
         self.checkBox_popup.setText(_translate("Form", "Show Popup"))
+        self.checkBox_fixedwidth.setToolTip(_translate("Form", "Fixed or variable width popup"))
+        self.checkBox_fixedwidth.setText(_translate("Form", "Fixed Width"))
         self.label_3.setText(_translate("Form", "     Popup X position"))
         self.spinBox_xpos.setSuffix(_translate("Form", " px"))
         self.label_4.setText(_translate("Form", "   Display Time"))

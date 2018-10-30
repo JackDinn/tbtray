@@ -54,7 +54,7 @@ This does not mean you can not use the unified mail box with Thunderbird, just t
 
 ![Popup window](https://i.imgur.com/0AnneUK.png)
 
-![Basic Settings](https://i.imgur.com/4PiAi30.png)
+![Basic Settings](https://i.imgur.com/mhlgPF7.png)
 
 
 ### General usage ###

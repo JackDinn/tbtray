@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>840</width>
-    <height>495</height>
+    <width>945</width>
+    <height>482</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -150,6 +150,16 @@
            <widget class="QCheckBox" name="checkBox_popup">
             <property name="text">
              <string>Show Popup</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBox_fixedwidth">
+            <property name="toolTip">
+             <string>Fixed or variable width popup</string>
+            </property>
+            <property name="text">
+             <string>Fixed Width</string>
             </property>
            </widget>
           </item>

@@ -183,12 +183,18 @@ class TextBrowser(QtWidgets.QTextBrowser):
         self.INTRAY = False
         self.hideme = False
         self.height = 100
+        self.width = 100
+        self.fixedwidth = True
         self.document().contentsChanged.connect(self.sizechange)
 
     def sizechange(self):
+        docwidth = 300
         docheight = self.document().size().height()
+        if self.fixedwidth: docwidth = 300
+        if not self.fixedwidth: docwidth = self.document().size().width()
         self.height = int(docheight)
-        self.setGeometry(5, 5, 322, self.height + 10)
+        self.width = int(docwidth)
+        self.setGeometry(1, 1, self.width + 10, self.height + 10)
 
     def mouseReleaseEvent(self, event):
         subprocess.run(["xdotool", "windowmap", self.windowid])
@@ -203,16 +209,20 @@ class Popup(QtWidgets.QDialog):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setObjectName("formpopup")
-        self.setGeometry(1585, 40, 330, 293)
+        self.setGeometry(1185, 40, 430, 993)
+        self.setStyleSheet("background-color:DodgerBlue;")
         self.setMinimumSize(QtCore.QSize(0, 0))
         self.setStatusTip("")
         self.setWindowTitle("formpopup")
         self.textBrowser = TextBrowser(self)
-        self.textBrowser.setGeometry(5, 5, 322, 100)
+        self.textBrowser.setGeometry(5, 5, 150, 100)
+        self.textBrowser.setStyleSheet("background-color:none;")
+        self.textBrowser.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.textBrowser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.closebutton = QtWidgets.QPushButton(self)
         self.closebutton.setText('X')
-        self.closebutton.setGeometry(304, 8, 20, 20)
-        self.closebutton.setStyleSheet('color: red')
+        self.closebutton.setGeometry(404, 8, 20, 20)
+        self.closebutton.setStyleSheet('color: red; background-color:none;')
         self.closebutton.clicked.connect(self.clicked)
         self.duration = 10
         self.browsertext = ''
@@ -229,7 +239,7 @@ class Popup(QtWidgets.QDialog):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setWindowFlags(Qt.X11BypassWindowManagerHint)
         self.setWindowOpacity(0.90)
-        self.xpos = 1585
+        self.xpos = 1485
         self.shownmessages = []
 
     def fire(self, profiles, count=1, firstrun=False, testrun=False):
@@ -247,7 +257,8 @@ class Popup(QtWidgets.QDialog):
                         self.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
                 if self.popupon: self.show()
                 self.textBrowser.setText(self.browsertext)
-                self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
+                self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 12, self.textBrowser.height + 11)
+                self.closebutton.setGeometry(self.textBrowser.width - 14, 8, 20, 20)
                 if self.soundon: self.sound.play()
                 self.popup_timer.start(self.duration * 1000)
                 self.popup_timer2.start()
@@ -294,7 +305,8 @@ class Popup(QtWidgets.QDialog):
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
                     self.textBrowser.setText(self.browsertext)
-                    self.setGeometry(self.xpos, 40, 330, self.textBrowser.height + 20)
+                    self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 12, self.textBrowser.height + 11)
+                    self.closebutton.setGeometry(self.textBrowser.width - 14, 8, 20, 20)
                     self.popup_timer.start(self.duration * 1000)
                     self.popup_timer2.start()
 
@@ -311,7 +323,7 @@ class Popup(QtWidgets.QDialog):
                 byte_string = quopri.decodestring(encoded_text)
             if byte_string: return front + byte_string.decode(charset) + back
         except:
-            print('def encoded_words_to_text:  LookupError: unknown encoding')
+            log('def encoded_words_to_text:  LookupError: unknown encoding')
             return 'Could Not decode Subject string'
 
     def timer2(self):
@@ -353,6 +365,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         checksettings()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
+        self.checkBox_fixedwidth.setChecked(bool(int(config['popup']['fixedwidth'])))
         self.spinBox_displaytime.setValue(int(config['popup']['duration']))
         self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
         self.horizontalSlider_opacity.setValue(int(config['popup']['opacity']))
@@ -379,6 +392,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def actionsetup(self):
         self.label_accountwarrning.setText('')
+        self.popup.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
+        if self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
+        if not self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
         self.popup.duration = self.spinBox_displaytime.value()
         self.popup.favicons = self.checkBox_favicons.isChecked()
         self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
@@ -475,6 +491,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def cancel(self):
         self.testforprofile()
         self.hide()
+        self.checkBox_fixedwidth.setChecked(self.popup.textBrowser.fixedwidth)
         self.checkBox_favicons.setChecked(self.popup.favicons)
         self.label_colour.setStyleSheet('color: ' + self.colour)
         self.spinBox_xpos.setValue(self.popup.xpos)
@@ -488,6 +505,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def ok(self):
         config = configparser.ConfigParser()
         config['popup'] = {}
+        config['popup']['fixedwidth'] = str(int(self.checkBox_fixedwidth.isChecked()))
+        self.popup.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
+        if self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
+        if not self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
         config['popup']['duration'] = str(self.spinBox_displaytime.value())
         self.popup.duration = self.spinBox_displaytime.value()
         config['popup']['favicons'] = str(int(self.checkBox_favicons.isChecked()))
@@ -537,7 +558,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
-            else:
+            elif self.winId():
                 subprocess.run(["xdotool", "windowmap", self.windowid])
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
@@ -551,7 +572,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
-            else:
+            elif self.winId():
                 subprocess.run(["xdotool", "windowmap", self.windowid])
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
@@ -579,7 +600,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             if idx:
                 self.windowid = idx[0]
                 self.popup.textBrowser.windowid = self.windowid
-                print('grabbed window ' + idx[0])
+                log('grabbed window ' + idx[0])
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
             stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if not stdout and self.windowid:
