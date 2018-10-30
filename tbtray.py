@@ -537,7 +537,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
-            else:
+            elif self.windowid:
                 subprocess.run(["xdotool", "windowmap", self.windowid])
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
@@ -551,7 +551,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
-            else:
+            elif self.windowid:
                 subprocess.run(["xdotool", "windowmap", self.windowid])
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
                 subprocess.run(["xdotool", "windowactivate", self.windowid])
