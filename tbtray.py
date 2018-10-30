@@ -24,6 +24,7 @@ from time import strftime
 import tbtrayui
 
 
+
 def close():
     os.system('pkill thunderbird')
     sys.exit(0)
