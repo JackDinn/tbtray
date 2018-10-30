@@ -24,7 +24,6 @@ from time import strftime
 import tbtrayui
 
 
-
 def close():
     os.system('pkill thunderbird')
     sys.exit(0)
@@ -211,13 +210,12 @@ class Popup(QtWidgets.QDialog):
         super(self.__class__, self).__init__()
         self.setObjectName("formpopup")
         self.setGeometry(1185, 40, 430, 993)
-        self.setStyleSheet("background-color:DodgerBlue;")
         self.setMinimumSize(QtCore.QSize(0, 0))
         self.setStatusTip("")
         self.setWindowTitle("formpopup")
         self.textBrowser = TextBrowser(self)
         self.textBrowser.setGeometry(5, 5, 150, 100)
-        self.textBrowser.setStyleSheet("background-color:none;")
+        self.textBrowser.setStyleSheet("border:1px solid DodgerBlue;")
         self.textBrowser.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.textBrowser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.closebutton = QtWidgets.QPushButton(self)
