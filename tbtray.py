@@ -30,7 +30,9 @@ def close():
 
 
 def log(tex=''):
-    return
+    tail = subprocess.run(["tail", "-n", "500", "log.txt"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+    with open('log.txt', 'w+') as xx:
+        xx.write(tail)
     tim = strftime("%y-%m-%d %H:%M:%S")
     with open('log.txt', 'a+') as qq:
         qq.write(tim + ' ' + tex + '\n')
@@ -194,7 +196,7 @@ class TextBrowser(QtWidgets.QTextBrowser):
         if not self.fixedwidth: docwidth = self.document().size().width()
         self.height = int(docheight)
         self.width = int(docwidth)
-        self.setGeometry(1, 1, self.width + 10, self.height + 10)
+        self.setGeometry(5, 5, self.width + 10, self.height + 10)
 
     def mouseReleaseEvent(self, event):
         subprocess.run(["xdotool", "windowmap", self.windowid])
@@ -214,10 +216,8 @@ class Popup(QtWidgets.QDialog):
         self.setStatusTip("")
         self.setWindowTitle("formpopup")
         self.setObjectName('formpopup')
-        self.setStyleSheet('#formpopup{border:1px solid DodgerBlue;}')
         self.textBrowser = TextBrowser(self)
         self.textBrowser.setGeometry(5, 5, 150, 100)
-        self.textBrowser.setStyleSheet("border:0px")
         self.textBrowser.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.textBrowser.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.closebutton = QtWidgets.QPushButton(self)
@@ -258,8 +258,8 @@ class Popup(QtWidgets.QDialog):
                         self.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
                 if self.popupon: self.show()
                 self.textBrowser.setText(self.browsertext)
-                self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 12, self.textBrowser.height + 12)
-                self.closebutton.setGeometry(self.textBrowser.width - 14, 8, 20, 20)
+                self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 20)
+                self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
                 if self.soundon: self.sound.play()
                 self.popup_timer.start(self.duration * 1000)
                 self.popup_timer2.start()
@@ -306,8 +306,8 @@ class Popup(QtWidgets.QDialog):
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
                     self.textBrowser.setText(self.browsertext)
-                    self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 12, self.textBrowser.height + 12)
-                    self.closebutton.setGeometry(self.textBrowser.width - 14, 8, 20, 20)
+                    self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 20)
+                    self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
                     self.popup_timer.start(self.duration * 1000)
                     self.popup_timer2.start()
 
@@ -349,6 +349,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         os.system('thunderbird > /dev/null 2>&1 &')
         os.chdir(os.path.dirname(sys.argv[0]))
         self.my_settings_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
+        self.UUID = subprocess.run(["cat", "/etc/machine-id"], stdout=subprocess.PIPE).stdout.decode('UTF-8').rstrip()
         log('')
         log('TBtray started ################################################ ')
         self.matches = 0
