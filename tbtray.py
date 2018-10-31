@@ -11,6 +11,7 @@ import urllib.request
 from pathlib import Path
 from shutil import copyfile
 from urllib.parse import urlparse
+from email.header import Header, decode_header, make_header
 
 import requests
 from PyQt5 import QtGui, QtWidgets, QtCore
@@ -313,19 +314,21 @@ class Popup(QtWidgets.QDialog):
 
     @staticmethod
     def encoded_words_to_text(encoded_words):
-        byte_string = ''
-        encoded_word_regex = r'(.*)=\?{1}(.+)\?{1}([B|Q|b|q])\?{1}(.+)\?{1}=(.*)'
-        if not re.match(encoded_word_regex, encoded_words): return encoded_words
-        front, charset, encoding, encoded_text, back = re.match(encoded_word_regex, encoded_words).groups()
-        try:
-            if encoding is 'B'or encoding is 'b':
-                byte_string = base64.b64decode(encoded_text)
-            elif encoding is 'Q' or encoding is 'q':
-                byte_string = quopri.decodestring(encoded_text)
-            if byte_string: return front + byte_string.decode(charset) + back
-        except:
-            log('def encoded_words_to_text:  LookupError: unknown encoding')
-            return 'Could Not decode Subject string'
+        return str(make_header(decode_header(encoded_words)))
+
+        # byte_string = ''
+        # encoded_word_regex = r'(.*)=\?{1}(.+)\?{1}([B|Q|b|q])\?{1}(.+)\?{1}=(.*)'
+        # if not re.match(encoded_word_regex, encoded_words): return encoded_words
+        # front, charset, encoding, encoded_text, back = re.match(encoded_word_regex, encoded_words).groups()
+        # try:
+        #     if encoding is 'B'or encoding is 'b':
+        #         byte_string = base64.b64decode(encoded_text)
+        #     elif encoding is 'Q' or encoding is 'q':
+        #         byte_string = quopri.decodestring(encoded_text)
+        #     if byte_string: return front + byte_string.decode(charset) + back
+        # except:
+        #     log('def encoded_words_to_text:  LookupError: unknown encoding')
+        #     return 'Could Not decode Subject string'
 
     def timer2(self):
         if self.textBrowser.hideme:
