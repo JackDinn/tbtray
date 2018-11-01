@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-import base64
 import configparser
 import getpass
 import os
-import quopri
 import re
 import subprocess
 import sys
 import urllib.request
+from email.header import decode_header, make_header
 from pathlib import Path
 from shutil import copyfile
+from time import strftime
 from urllib.parse import urlparse
-from email.header import Header, decode_header, make_header
 
 import requests
 from PyQt5 import QtGui, QtWidgets, QtCore
@@ -20,7 +19,6 @@ from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
 from PyQt5.QtMultimedia import QSound
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
 from bs4 import BeautifulSoup
-from time import strftime
 
 import tbtrayui
 
@@ -289,8 +287,8 @@ class Popup(QtWidgets.QDialog):
                     for x in range(len(mailinfo['messageid'])):
                         log('Scraped from ' + mailinfo['from'][x - 1])
                         log('Scraped subj ' + mailinfo['subject'][x - 1])
-                        fromx = self.encoded_words_to_text(mailinfo['from'][x - 1])
-                        subject = self.encoded_words_to_text(mailinfo['subject'][x - 1])
+                        fromx = str(make_header(decode_header(mailinfo['from'][x - 1])))
+                        subject = str(make_header(decode_header(mailinfo['subject'][x - 1])))
                         log('decoded from ' + fromx)
                         log('decoded subj ' + subject)
                         if self.favicons:
@@ -311,24 +309,6 @@ class Popup(QtWidgets.QDialog):
                     self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
                     self.popup_timer.start(self.duration * 1000)
                     self.popup_timer2.start()
-
-    @staticmethod
-    def encoded_words_to_text(encoded_words):
-        return str(make_header(decode_header(encoded_words)))
-
-        # byte_string = ''
-        # encoded_word_regex = r'(.*)=\?{1}(.+)\?{1}([B|Q|b|q])\?{1}(.+)\?{1}=(.*)'
-        # if not re.match(encoded_word_regex, encoded_words): return encoded_words
-        # front, charset, encoding, encoded_text, back = re.match(encoded_word_regex, encoded_words).groups()
-        # try:
-        #     if encoding is 'B'or encoding is 'b':
-        #         byte_string = base64.b64decode(encoded_text)
-        #     elif encoding is 'Q' or encoding is 'q':
-        #         byte_string = quopri.decodestring(encoded_text)
-        #     if byte_string: return front + byte_string.decode(charset) + back
-        # except:
-        #     log('def encoded_words_to_text:  LookupError: unknown encoding')
-        #     return 'Could Not decode Subject string'
 
     def timer2(self):
         if self.textBrowser.hideme:
