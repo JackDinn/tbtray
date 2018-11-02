@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import configparser
 import getpass
+import mailbox
 import os
 import re
 import subprocess
@@ -150,7 +151,7 @@ def checksettings():
         configfile.close()
 
 
-def readmessage(path, count=1):
+def readmessage(path):
     from_text = []
     subject_text = []
     date_text = []
@@ -158,22 +159,15 @@ def readmessage(path, count=1):
     for gg in path:
         if not os.path.isfile(gg): continue
         text = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE).stdout.decode('UTF-8', "ignore")
-        fromx = re.findall('\\r\\nFrom: (.*@.*)\\r\\n', text)[(0 - count):]
-        subject = re.findall('\\r\\nSubject: (.*)\\r\\n', text)[0 - count:]
-        date = re.findall('\\r\\nDate: (.*)\\r\\n', text)[0-count:]
-        messageid = re.findall('\\r\\nMessage-I[Dd]: (.*)\\r\\n', text)[0-count:]
-        for q in messageid:
-            messageid_text.append(q)
-        for w in date:
-            date_text.append(w)
-        for x in fromx:
-            xx = str(x).replace('<', '&lt;')
-            xx = str(xx).replace('>', '&gt;')
-            from_text.append(xx)
-        for tt in subject:
-            xy = str(tt).replace('<', '&lt;')
-            xy = str(xy).replace('>', '&gt;')
-            subject_text.append(xy)
+        with open('/tmp/data', 'w+') as xyz:
+            xyz.write(text)
+        fr = mailbox.mbox('/tmp/data')
+        os.remove('/tmp/data')
+        for q in fr:
+            if q['Message-ID']: messageid_text.append(q['Message-ID'])
+            if q['Date']: date_text.append(q['Date'])
+            if q['From']: from_text.append(q['From'])
+            if q['Subject']: subject_text.append(str(q['Subject']).replace('\r\n', '<br>'))
     return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
 
 
@@ -242,7 +236,7 @@ class Popup(QtWidgets.QDialog):
         self.xpos = 1485
         self.shownmessages = []
 
-    def fire(self, profiles, count=1, firstrun=False, testrun=False):
+    def fire(self, profiles, firstrun=False, testrun=False):
         if testrun:
             if self.popupon or self.sound:
                 if not self.isVisible():
@@ -270,7 +264,7 @@ class Popup(QtWidgets.QDialog):
                 popprofiles.append(profiles[ss].replace('INBOX.msf', 'INBOX'))
                 if os.path.isfile(popprofiles[ss]): fileexists = True
             if fileexists:
-                mailinfo = readmessage(popprofiles, count)
+                mailinfo = readmessage(popprofiles)
                 up = 0
                 for mc in range(len(mailinfo['messageid'])):
                     if self.shownmessages.__contains__(mailinfo['messageid'][up]):
@@ -292,8 +286,8 @@ class Popup(QtWidgets.QDialog):
                         log('decoded from ' + fromx)
                         log('decoded subj ' + subject)
                         if self.favicons:
-                            fromxy = fromx + '&'
-                            log('from ' + fromxy)
+                            fromxy = fromx.replace('>', '&') + '&'
+                            log('fromxy ' + fromxy)
                             fav = re.findall('@\S*?\.?([\w|-]*(\.\w{2,3})?\.\w{2,3})&', fromxy)
                             if len(fav) > 0:
                                 log('get favicon ' + fav[0][0])
@@ -414,10 +408,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.pushButton_colourpicker.clicked.connect(self.func_colourpicker)
         self.tray_icon.show()
         if self.badprofile: self.tray_icon.showMessage('TBtray Profile Warning', 'Please setup account profiles', QSystemTrayIcon.Critical)
-        self.popup.fire(self.profiles, 10, True)
+        self.popup.fire(self.profiles, True)
 
     def func_toolbutton_firepopup(self):
-        self.popup.fire(self.profiles, 2, False, True)
+        self.popup.fire(self.profiles, False, True)
 
     def func_toolbutton_notifysound(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Sound File', '/home/' + getpass.getuser())[0]
@@ -530,7 +524,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
         self.timetriggercheck.start(1000)
         self.lastmtime = 0
-        self.popup.fire(self.profiles, 10, True)
+        self.popup.fire(self.profiles, False)
 
     def settings(self):
         self.timetriggercheck.stop()
@@ -620,7 +614,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         painter.end()
                         self.tray_icon.setIcon(QtGui.QIcon(pixmap))
                     else: self.tray_icon.setIcon(QtGui.QIcon(self.notifyicon))
-                    if not self.badprofile: self.popup.fire(self.profiles, self.matches)
+                    if not self.badprofile: self.popup.fire(self.profiles)
                 else: self.tray_icon.setIcon(QtGui.QIcon(self.defaulticon))
                 break
         self.timetriggercheck.start(1000)
