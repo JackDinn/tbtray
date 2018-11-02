@@ -164,10 +164,13 @@ def readmessage(path):
         fr = mailbox.mbox('/tmp/tbtraydata')
         if os.path.isfile('/tmp/tbtraydata'): os.remove('/tmp/tbtraydata')
         for q in fr:
-            if q['Message-ID']: messageid_text.append(q['Message-ID'])
-            if q['Date']: date_text.append(q['Date'])
-            if q['From']: from_text.append(str(q['From']).replace('<', '&lt;').replace('>', '&gt;'))
-            if q['Subject']: subject_text.append(str(q['Subject']).replace('\r\n', '<br>'))
+            try:
+                messageid_text.append(str(make_header(decode_header(q['message-ID']))))
+                date_text.append(str(make_header(decode_header(q['date']))))
+                from_text.append(str(make_header(decode_header(q['from']))).replace('<', '&lt;').replace('>', '&gt;'))
+                subject_text.append(str(make_header(decode_header(q['subject']))).replace('\r\n', '<br>'))
+            except:
+                continue
     return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
 
 
@@ -281,10 +284,8 @@ class Popup(QtWidgets.QDialog):
                     for x in range(len(mailinfo['messageid'])):
                         log('parsed from ' + mailinfo['from'][x - 1])
                         log('parsed subj ' + mailinfo['subject'][x - 1])
-                        fromx = str(make_header(decode_header(mailinfo['from'][x - 1])))
-                        subject = str(make_header(decode_header(mailinfo['subject'][x - 1])))
-                        log('decoded from ' + fromx)
-                        log('decoded subj ' + subject)
+                        fromx = mailinfo['from'][x - 1]
+                        subject = mailinfo['subject'][x - 1]
                         if self.favicons:
                             fromxy = fromx + '&'
                             log('fromxy ' + fromxy)
