@@ -279,8 +279,8 @@ class Popup(QtWidgets.QDialog):
                         self.textBrowser.clear()
                         self.browsertext = ''
                     for x in range(len(mailinfo['messageid'])):
-                        log('Scraped from ' + mailinfo['from'][x - 1])
-                        log('Scraped subj ' + mailinfo['subject'][x - 1])
+                        log('parsed from ' + mailinfo['from'][x - 1])
+                        log('parsed subj ' + mailinfo['subject'][x - 1])
                         fromx = str(make_header(decode_header(mailinfo['from'][x - 1])))
                         subject = str(make_header(decode_header(mailinfo['subject'][x - 1])))
                         log('decoded from ' + fromx)
