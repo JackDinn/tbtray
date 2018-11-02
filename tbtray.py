@@ -162,7 +162,7 @@ def readmessage(path):
         with open('/tmp/tbtraydata', 'w+') as xyz:
             xyz.write(text)
         fr = mailbox.mbox('/tmp/tbtraydata')
-        os.remove('/tmp/tbtraydata')
+        if os.path.isfile('/tmp/tbtraydata'): os.remove('/tmp/tbtraydata')
         for q in fr:
             if q['Message-ID']: messageid_text.append(q['Message-ID'])
             if q['Date']: date_text.append(q['Date'])
