@@ -159,14 +159,14 @@ def readmessage(path):
     for gg in path:
         if not os.path.isfile(gg): continue
         text = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE).stdout.decode('UTF-8', "ignore")
-        with open('/tmp/data', 'w+') as xyz:
+        with open('/tmp/tbtraydata', 'w+') as xyz:
             xyz.write(text)
-        fr = mailbox.mbox('/tmp/data')
-        os.remove('/tmp/data')
+        fr = mailbox.mbox('/tmp/tbtraydata')
+        os.remove('/tmp/tbtraydata')
         for q in fr:
             if q['Message-ID']: messageid_text.append(q['Message-ID'])
             if q['Date']: date_text.append(q['Date'])
-            if q['From']: from_text.append(q['From'])
+            if q['From']: from_text.append(str(q['From']).replace('<', '&lt;').replace('>', '&gt;'))
             if q['Subject']: subject_text.append(str(q['Subject']).replace('\r\n', '<br>'))
     return {'from': from_text, 'subject': subject_text, 'date': date_text, 'messageid': messageid_text}
 
@@ -286,7 +286,7 @@ class Popup(QtWidgets.QDialog):
                         log('decoded from ' + fromx)
                         log('decoded subj ' + subject)
                         if self.favicons:
-                            fromxy = fromx.replace('>', '&') + '&'
+                            fromxy = fromx + '&'
                             log('fromxy ' + fromxy)
                             fav = re.findall('@\S*?\.?([\w|-]*(\.\w{2,3})?\.\w{2,3})&', fromxy)
                             if len(fav) > 0:
