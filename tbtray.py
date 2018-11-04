@@ -519,7 +519,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup.fire(self.profiles, False)
 
     def settings(self):
-        # self.timetriggercheck.stop()
         self.show()
 
     def iconclick(self):
