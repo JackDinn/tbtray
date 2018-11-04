@@ -381,6 +381,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup.fire(self.profiles, True)
 
     def func_toolbutton_firepopup(self):
+        self.popup_test.textBrowser.windowid = self.windowid
         if not self.popup_test.isVisible():
             self.popup_test.textBrowser.clear()
             self.popup_test.browsertext = ''
@@ -399,6 +400,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, 40, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 20)
         self.popup_test.closebutton.setGeometry(self.popup_test.textBrowser.width - 4, 8, 20, 20)
         self.popup_test.popup_timer.start(self.spinBox_displaytime.value() * 1000)
+        self.popup_test.popup_timer2.start()
         if self.checkBox_notifysound.isChecked(): self.popup_test.sound.play()
         return
 
