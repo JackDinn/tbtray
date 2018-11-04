@@ -402,7 +402,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup_test.popup_timer.start(self.spinBox_displaytime.value() * 1000)
         self.popup_test.popup_timer2.start()
         if self.checkBox_notifysound.isChecked(): self.popup_test.sound.play()
-        return
 
     def func_toolbutton_notifysound(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Sound File', '/home/' + getpass.getuser())[0]
@@ -520,7 +519,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup.fire(self.profiles, False)
 
     def settings(self):
-        self.timetriggercheck.stop()
+        # self.timetriggercheck.stop()
         self.show()
 
     def iconclick(self):
@@ -563,9 +562,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(15000)
             return
         self.timetriggercheck.stop()
-        if self.popup.textBrowser.INTRAY:
+        if self.popup.textBrowser.INTRAY or self.popup_test.textBrowser.INTRAY:
             self.INTRAY = False
             self.popup.textBrowser.INTRAY = False
+            self.popup_test.textBrowser.INTRAY = False
         if not self.windowid:
             stdout = subprocess.run(["wmctrl", '-lx'], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             idx = re.findall('(\dx\w+)..0 Mail\.Thunderbird', str(stdout))
