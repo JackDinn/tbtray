@@ -116,18 +116,6 @@ def getfavicon(url):
         log('failed local func scrape ' + url)
         return 'res/thunderbird.png'
 
-    # try:
-    #     path = str(Path.home()) + '/.config/tbtray/icons/'
-    #     iconpath = path + url + '.ico'
-    #     if Path.is_file(Path(iconpath)):
-    #         return iconpath
-    #     icon = urllib.request.urlopen('https://api.faviconkit.com/' + url + '/16')
-    #     with open(iconpath, "wb") as f:
-    #         f.write(icon.read())
-    #     return iconpath
-    # except:
-    #     return 'res/thunderbird.png'
-
 
 def checksettings():
     my_dir = Path(str(Path.home()) + '/.config/tbtray')
@@ -158,7 +146,7 @@ def readmessage(path):
     messageid_text = []
     for gg in path:
         if not os.path.isfile(gg): continue
-        text = subprocess.run(["tail", "-n", "6000", gg], stdout=subprocess.PIPE).stdout.decode('UTF-8', "ignore")
+        text = subprocess.run(["tail", "-n", "10000", gg], stdout=subprocess.PIPE).stdout.decode('UTF-8', "ignore")
         with open('/tmp/tbtraydata', 'w+') as xyz:
             xyz.write(text)
         fr = mailbox.mbox('/tmp/tbtraydata')
@@ -239,28 +227,8 @@ class Popup(QtWidgets.QDialog):
         self.xpos = 1485
         self.shownmessages = []
 
-    def fire(self, profiles, firstrun=False, testrun=False):
-        if testrun:
-            if self.popupon or self.sound:
-                if not self.isVisible():
-                    self.textBrowser.clear()
-                    self.browsertext = ''
-                icon = 'res/thunderbird.png'
-                log('icon ' + icon)
-                for tt in range(2):
-                    if self.favicons:
-                        self.browsertext += '<h3 style="color: DodgerBlue"><img height="20" width="20" src="' + icon + '"/>&nbsp;&nbsp;Twitter &lt;binfo@twitter.com&gt;</h3><p>This is a test message'
-                    else:
-                        self.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>Subject line of text'
-                if self.popupon: self.show()
-                self.textBrowser.setText(self.browsertext)
-                self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 20)
-                self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
-                if self.soundon: self.sound.play()
-                self.popup_timer.start(self.duration * 1000)
-                self.popup_timer2.start()
-                return
-        if self.popupon or self.sound:
+    def fire(self, profiles, firstrun=False):
+        if self.popupon or self.soundon:
             popprofiles = []
             fileexists = False
             for ss in range(len(profiles)):
@@ -367,6 +335,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.listWidget.addItem(config['profiles'][str(value)])
         self.testforprofile()
         self.popup = Popup()
+        self.popup_test = Popup()
         self.actionsetup()
         self.timersetup()
 
@@ -412,7 +381,26 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup.fire(self.profiles, True)
 
     def func_toolbutton_firepopup(self):
-        self.popup.fire(self.profiles, False, True)
+        if not self.popup_test.isVisible():
+            self.popup_test.textBrowser.clear()
+            self.popup_test.browsertext = ''
+        icon = 'res/thunderbird.png'
+        self.popup_test.sound = QSound(self.lineEdit_notifysound.text())
+        if self.checkBox_favicons.isChecked():
+            self.popup_test.browsertext += '<h3 style="color: DodgerBlue"><img height="20" width="20" src="' + icon + '"/>&nbsp;&nbsp;Mail Info:- From address</h3><p>This is a test message. Lorem ipsum dolor sit amet, vivamus platea faucibus sed per penatibus.'
+        else:
+            self.popup_test.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>This is a test message. Lorem ipsum dolor sit amet, vivamus platea faucibus sed per penatibus.'
+        if self.checkBox_popup.isChecked(): self.popup_test.show()
+        self.popup_test.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
+        self.popup_test.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
+        if self.popup_test.textBrowser.fixedwidth: self.popup_test.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
+        if not self.popup_test.textBrowser.fixedwidth: self.popup_test.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
+        self.popup_test.textBrowser.setText(self.popup_test.browsertext)
+        self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, 40, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 20)
+        self.popup_test.closebutton.setGeometry(self.popup_test.textBrowser.width - 4, 8, 20, 20)
+        self.popup_test.popup_timer.start(self.spinBox_displaytime.value() * 1000)
+        if self.checkBox_notifysound.isChecked(): self.popup_test.sound.play()
+        return
 
     def func_toolbutton_notifysound(self):
         x = QFileDialog.getOpenFileName(self, 'Select Notify Sound File', '/home/' + getpass.getuser())[0]
@@ -472,6 +460,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.testforprofile()
         self.hide()
         self.checkBox_fixedwidth.setChecked(self.popup.textBrowser.fixedwidth)
+        if self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
+        if not self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
         self.checkBox_favicons.setChecked(self.popup.favicons)
         self.label_colour.setStyleSheet('color: ' + self.colour)
         self.spinBox_xpos.setValue(self.popup.xpos)
