@@ -247,7 +247,6 @@ class Popup(QtWidgets.QDialog):
                 for fr in mailinfo['messageid']: self.shownmessages.append(fr)
                 if not firstrun and len(mailinfo['messageid']) > 0:
                     if not self.isVisible():
-                        self.textBrowser.clear()
                         self.browsertext = ''
                     for x in range(len(mailinfo['messageid'])):
                         log('parsed from ' + mailinfo['from'][x - 1])
@@ -267,6 +266,7 @@ class Popup(QtWidgets.QDialog):
                             self.browsertext += '<h3 style="color: DodgerBlue"><center>' + fromx + '</center></h3><p>' + subject
                     if self.popupon: self.show()
                     if self.soundon: self.sound.play()
+                    self.textBrowser.clear()
                     self.textBrowser.setText(self.browsertext)
                     self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 20)
                     self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
@@ -383,7 +383,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def func_toolbutton_firepopup(self):
         self.popup_test.textBrowser.windowid = self.windowid
         if not self.popup_test.isVisible():
-            self.popup_test.textBrowser.clear()
             self.popup_test.browsertext = ''
         icon = 'res/thunderbird.png'
         self.popup_test.sound = QSound(self.lineEdit_notifysound.text())
@@ -396,6 +395,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.popup_test.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
         if self.popup_test.textBrowser.fixedwidth: self.popup_test.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
         if not self.popup_test.textBrowser.fixedwidth: self.popup_test.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
+        self.popup_test.textBrowser.clear()
         self.popup_test.textBrowser.setText(self.popup_test.browsertext)
         self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, 40, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 20)
         self.popup_test.closebutton.setGeometry(self.popup_test.textBrowser.width - 4, 8, 20, 20)
