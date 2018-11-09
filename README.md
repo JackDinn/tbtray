@@ -1,9 +1,9 @@
 # TBtray #
 
-#### A Thunderbird tray addon for linux (best on KDE) ####
+## A Thunderbird tray addon for linux (best on KDE) ##
 
-I only built it because we did'nt have any TB tray integration after Thunderbird 60+. 
-Keep in mind im just a hobbyist. I'm doing this to try and learn a little about using git and github.
+I only built it because we did'nt have any TB tray integration after Thunderbird 60+.
+Keep in mind im just a hobbyist, I'm doing this to try and learn a little about using git and github.
 
 
 ## Installation ##
@@ -12,7 +12,6 @@ Keep in mind im just a hobbyist. I'm doing this to try and learn a little about 
 
     xdotool
     wmctrl                                          [these 2 control the window manager]
-    python3-bs4 (or python-beautifulsoup4)          [One of these are for the favicon scraping] 
     python3-pyqt5.qtmultimedia (or qt5-multimedia)  [One of these are for the sound]
     
     Then clone the repo 

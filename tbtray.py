@@ -11,15 +11,12 @@ from email.header import decode_header, make_header
 from pathlib import Path
 from shutil import copyfile
 from time import strftime
-from urllib.parse import urlparse
 
-import requests
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPixmap, QPainter, QColor, QFontMetrics, QFont
+from PyQt5.QtGui import QColor, QFont, QFontMetrics, QPainter, QPixmap
 from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon, QFileDialog, QColorDialog
-from bs4 import BeautifulSoup
+from PyQt5.QtWidgets import (QAction, QColorDialog, QFileDialog, QMenu, QSystemTrayIcon)
 
 import tbtrayui
 
@@ -37,42 +34,6 @@ def log(tex=''):
     with open('log.txt', 'a+') as qq:
         qq.write(tim + ' ' + tex + '\n')
     return
-
-
-def parse_markup_for_favicon(markup, url):
-    parsed_site_uri = urlparse(url)
-    soup = BeautifulSoup(markup, features="html5lib")
-    icon_link = soup.find('link', rel='icon')
-    if icon_link and icon_link.has_attr('href'):
-        favicon_url = icon_link['href']
-        if favicon_url.startswith('//'):
-            parsed_uri = urlparse(url)
-            favicon_url = parsed_uri.scheme + ':' + favicon_url
-        elif favicon_url.startswith('/'):
-            favicon_url = parsed_site_uri.scheme + '://' + parsed_site_uri.netloc + favicon_url
-        elif not favicon_url.startswith('http'):
-            path, filename = os.path.split(parsed_site_uri.path)
-            favicon_url = parsed_site_uri.scheme + '://' + parsed_site_uri.netloc + '/' + os.path.join(path, favicon_url)
-        return favicon_url
-    return None
-
-
-def get_favicon_url(url):
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'}
-    parsed_site_uri = urlparse(url)
-    try:
-        response = requests.get(url, headers=headers)
-    except:
-        raise Exception("Unable to find URL. Is it valid? %s" % url)
-    if response.status_code == requests.codes.ok:
-        favicon_url = parse_markup_for_favicon(response.content, url)
-        if favicon_url:
-            return favicon_url
-    favicon_url = '{uri.scheme}://{uri.netloc}/favicon.ico'.format(uri=parsed_site_uri)
-    response = requests.get(favicon_url, headers=headers)
-    if response.status_code == requests.codes.ok:
-        return favicon_url
-    return None
 
 
 def getfavicon(url):
@@ -105,15 +66,6 @@ def getfavicon(url):
         return iconpath
     except:
         log('Failed google scrape ' + url)
-    try:
-        favicon_url = get_favicon_url('http://' + url)
-        log('favicon URL ' + favicon_url)
-        icon = urllib.request.urlopen(favicon_url)
-        with open(iconpath, "wb") as f:
-            f.write(icon.read())
-        return iconpath
-    except:
-        log('failed local func scrape ' + url)
         return 'res/thunderbird.png'
 
 
@@ -180,7 +132,7 @@ class TextBrowser(QtWidgets.QTextBrowser):
         if not self.fixedwidth: docwidth = self.document().size().width()
         self.height = int(docheight)
         self.width = int(docwidth)
-        self.setGeometry(5, 5, self.width + 10, self.height + 10)
+        self.setGeometry(5, 5, self.width + 10, self.height + 5)
 
     def mouseReleaseEvent(self, event):
         subprocess.run(["xdotool", "windowmap", self.windowid])
@@ -268,7 +220,7 @@ class Popup(QtWidgets.QDialog):
                     if self.soundon: self.sound.play()
                     self.textBrowser.clear()
                     self.textBrowser.setText(self.browsertext)
-                    self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 20)
+                    self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 15)
                     self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
                     self.popup_timer.start(self.duration * 1000)
                     self.popup_timer2.start()
@@ -346,7 +298,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         if not self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
         self.popup.duration = self.spinBox_displaytime.value()
         self.popup.favicons = self.checkBox_favicons.isChecked()
-        self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
+        self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value() / 100))
         self.popup.xpos = self.spinBox_xpos.value()
         self.popup.popupon = self.checkBox_popup.isChecked()
         self.popup.soundon = self.checkBox_notifysound.isChecked()
@@ -391,13 +343,13 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         else:
             self.popup_test.browsertext += '<h3 style="color: DodgerBlue">Mail Info:- From address</h3><p>This is a test message. Lorem ipsum dolor sit amet, vivamus platea faucibus sed per penatibus.'
         if self.checkBox_popup.isChecked(): self.popup_test.show()
-        self.popup_test.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
+        self.popup_test.setWindowOpacity(float(self.horizontalSlider_opacity.value() / 100))
         self.popup_test.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
         if self.popup_test.textBrowser.fixedwidth: self.popup_test.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
         if not self.popup_test.textBrowser.fixedwidth: self.popup_test.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
         self.popup_test.textBrowser.clear()
         self.popup_test.textBrowser.setText(self.popup_test.browsertext)
-        self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, 40, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 20)
+        self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, 40, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 15)
         self.popup_test.closebutton.setGeometry(self.popup_test.textBrowser.width - 4, 8, 20, 20)
         self.popup_test.popup_timer.start(self.spinBox_displaytime.value() * 1000)
         self.popup_test.popup_timer2.start()
@@ -469,7 +421,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.checkBox_popup.setChecked(self.popup.popupon)
         self.lineEdit_notifysound.setText(self.popup.sound.fileName())
         self.checkBox_notifysound.setChecked(self.popup.soundon)
-        self.horizontalSlider_opacity.setValue(int(self.popup.windowOpacity()*100))
+        self.horizontalSlider_opacity.setValue(int(self.popup.windowOpacity() * 100))
         self.spinBox_displaytime.setValue(self.popup.duration)
         self.timetriggercheck.start(1000)
 
@@ -485,7 +437,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         config['popup']['favicons'] = str(int(self.checkBox_favicons.isChecked()))
         self.popup.favicons = self.checkBox_favicons.isChecked()
         config['popup']['opacity'] = str(int(self.horizontalSlider_opacity.value()))
-        self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value()/100))
+        self.popup.setWindowOpacity(float(self.horizontalSlider_opacity.value() / 100))
         config['popup']['on'] = str(int(self.checkBox_popup.isChecked()))
         self.popup.popupon = self.checkBox_popup.isChecked()
         config['popup']['soundpath'] = self.lineEdit_notifysound.text()
