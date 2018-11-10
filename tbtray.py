@@ -40,7 +40,7 @@ def getfavicon(url):
     path = str(Path.home()) + '/.config/tbtray/icons/'
     iconpath = path + url + '.ico'
     if Path.is_file(Path(iconpath)):
-        log('Local icon ' + iconpath)
+        log('Local-icon ' + iconpath)
         return iconpath
     try:
         log('favicon URL https://www.google.com/s2/favicons?domain=' + url)

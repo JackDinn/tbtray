@@ -3,7 +3,7 @@
 ## A Thunderbird tray addon for linux (best on KDE) ##
 
 I only built it because we did'nt have any TB tray integration after Thunderbird 60+.
-Keep in mind im just a hobbyist, I'm doing this to try and learn a little about using git and github.
+Keep in mind im just a hobbyist, Im doing this to try and learn a little about using git and github.
 
 
 ## Installation ##
