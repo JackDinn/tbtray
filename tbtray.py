@@ -222,7 +222,7 @@ class Popup(QtWidgets.QDialog):
                     if self.soundon: self.sound.play()
                     self.textBrowser.clear()
                     self.textBrowser.setText(self.browsertext)
-                    if self.top: self.self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 15)
+                    if self.top: self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 15)
                     else: self.setGeometry(self.xpos - self.textBrowser.width, self.screenheight - 55 - self.textBrowser.height, self.textBrowser.width + 20, self.textBrowser.height + 15)
                     self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
                     self.popup_timer.start(self.duration * 1000)
