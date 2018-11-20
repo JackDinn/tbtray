@@ -451,6 +451,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         config = configparser.ConfigParser()
         config['popup'] = {}
         config['popup']['top'] = str(int(self.radioButton_top.isChecked()))
+        self.popup.top = self.radioButton_top.isChecked()
         config['popup']['fixedwidth'] = str(int(self.checkBox_fixedwidth.isChecked()))
         self.popup.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
         if self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
