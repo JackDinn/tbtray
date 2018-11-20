@@ -16,7 +16,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor, QFont, QFontMetrics, QPainter, QPixmap
 from PyQt5.QtMultimedia import QSound
-from PyQt5.QtWidgets import (QAction, QColorDialog, QFileDialog, QMenu, QSystemTrayIcon)
+from PyQt5.QtWidgets import QAction, QColorDialog, QFileDialog, QMenu, QSystemTrayIcon
 
 import tbtrayui
 
@@ -161,6 +161,8 @@ class Popup(QtWidgets.QDialog):
         self.closebutton.setGeometry(404, 8, 20, 20)
         self.closebutton.setStyleSheet('color:red;')
         self.closebutton.clicked.connect(self.clicked)
+        self.screenheight = getscreenheight()
+        self.top = True
         self.duration = 10
         self.browsertext = ''
         self.favicons = True
@@ -220,7 +222,8 @@ class Popup(QtWidgets.QDialog):
                     if self.soundon: self.sound.play()
                     self.textBrowser.clear()
                     self.textBrowser.setText(self.browsertext)
-                    self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 15)
+                    if self.top: self.setGeometry(self.xpos - self.textBrowser.width, 40, self.textBrowser.width + 20, self.textBrowser.height + 15)
+                    else: self.setGeometry(self.xpos - self.textBrowser.width, self.screenheight - 55 - self.textBrowser.height, self.textBrowser.width + 20, self.textBrowser.height + 15)
                     self.closebutton.setGeometry(self.textBrowser.width - 4, 8, 20, 20)
                     self.popup_timer.start(self.duration * 1000)
                     self.popup_timer2.start()
@@ -238,6 +241,17 @@ class Popup(QtWidgets.QDialog):
     def clicked(self):
         self.popup_timer2.stop()
         self.hide()
+
+
+def getscreenheight():
+    out = subprocess.run(["xrandr"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+    matches = re.findall('\d*x(\d*).*?\*', out)
+    if matches:
+        log('get screen height ' + matches[0])
+        return int(matches[0])
+    else:
+        log('get screen height ERROR')
+        return 1080
 
 
 class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
@@ -265,6 +279,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         checksettings()
         config = configparser.ConfigParser()
         config.read(self.my_settings_file)
+        self.radioButton_top.setChecked(bool(int(config['popup']['top'])))
+        self.radioButton_bottom.setChecked(not bool(int(config['popup']['top'])))
         self.checkBox_fixedwidth.setChecked(bool(int(config['popup']['fixedwidth'])))
         self.spinBox_displaytime.setValue(int(config['popup']['duration']))
         self.checkBox_favicons.setChecked(bool(int(config['popup']['favicons'])))
@@ -293,6 +309,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def actionsetup(self):
         self.label_accountwarrning.setText('')
+        self.popup.top = self.radioButton_top.isChecked()
         self.popup.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
         if self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
         if not self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
@@ -349,7 +366,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         if not self.popup_test.textBrowser.fixedwidth: self.popup_test.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
         self.popup_test.textBrowser.clear()
         self.popup_test.textBrowser.setText(self.popup_test.browsertext)
-        self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, 40, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 15)
+        if self.radioButton_top.isChecked(): self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, 40, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 15)
+        else: self.popup_test.setGeometry(self.spinBox_xpos.value() - self.popup_test.textBrowser.width, self.popup_test.screenheight - 55 - self.popup_test.textBrowser.height, self.popup_test.textBrowser.width + 20, self.popup_test.textBrowser.height + 15)
         self.popup_test.closebutton.setGeometry(self.popup_test.textBrowser.width - 4, 8, 20, 20)
         self.popup_test.popup_timer.start(self.spinBox_displaytime.value() * 1000)
         self.popup_test.popup_timer2.start()
@@ -413,10 +431,14 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.testforprofile()
         self.hide()
         self.checkBox_fixedwidth.setChecked(self.popup.textBrowser.fixedwidth)
-        if self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
-        if not self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
+        if self.popup.textBrowser.fixedwidth:
+            self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
+        if not self.popup.textBrowser.fixedwidth:
+            self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.NoWrap)
         self.checkBox_favicons.setChecked(self.popup.favicons)
         self.label_colour.setStyleSheet('color: ' + self.colour)
+        self.radioButton_top.setChecked(self.popup.top)
+        self.radioButton_bottom.setChecked(not self.popup.top)
         self.spinBox_xpos.setValue(self.popup.xpos)
         self.checkBox_popup.setChecked(self.popup.popupon)
         self.lineEdit_notifysound.setText(self.popup.sound.fileName())
@@ -428,6 +450,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def ok(self):
         config = configparser.ConfigParser()
         config['popup'] = {}
+        config['popup']['top'] = str(int(self.radioButton_top.isChecked()))
+        self.popup.top = self.radioButton_top.isChecked()
         config['popup']['fixedwidth'] = str(int(self.checkBox_fixedwidth.isChecked()))
         self.popup.textBrowser.fixedwidth = self.checkBox_fixedwidth.isChecked()
         if self.popup.textBrowser.fixedwidth: self.popup.textBrowser.setLineWrapMode(QtWidgets.QTextBrowser.WidgetWidth)
