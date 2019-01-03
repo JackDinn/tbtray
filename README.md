@@ -9,6 +9,8 @@ Keep in mind im just a hobbyist, Im doing this to try and learn a little about u
 ## Installation ##
 
     you will need to install these packages on your system first
+    
+    python 3.6+
 
     xdotool
     wmctrl                                          [these 2 control the window manager]
