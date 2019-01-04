@@ -1,6 +1,6 @@
 # TBtray #
 
-## A Thunderbird tray addon for linux (best on KDE) ##
+## A Thunderbird tray addon for linux built with PyQt5 ##
 
 I only built it because we did'nt have any TB tray integration after Thunderbird 60+.
 Keep in mind im just a hobbyist, Im doing this to try and learn a little about using git and github.

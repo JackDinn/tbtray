@@ -27,13 +27,15 @@ def close():
 
 
 def log(tex=''):
-    tail = subprocess.run(["tail", "-n", "500", "log.txt"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
-    with open('log.txt', 'w+') as xx:
-        xx.write(tail)
-    tim = strftime("%y-%m-%d %H:%M:%S")
-    with open('log.txt', 'a+') as qq:
-        qq.write(tim + ' ' + tex + '\n')
-    return
+    try:
+        tail = subprocess.run(["tail", "-n", "500", "log.txt"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+        with open('log.txt', 'w+') as xx:
+            xx.write(tail)
+        tim = strftime("%y-%m-%d %H:%M:%S")
+        with open('log.txt', 'a+') as qq:
+            qq.write(tim + ' ' + tex + '\n')
+    except:
+        pass
 
 
 def getfavicon(url):
@@ -259,9 +261,14 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def __init__(self):
         super(self.__class__, self).__init__()
         os.system('thunderbird > /dev/null 2>&1 &')
+        stdout = subprocess.run(["pgrep", "-fc", "tbtray.py"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+        if int(stdout) > 1:
+            bob = open('/tmp/tbpassover', 'x')
+            bob.close()
+            log('make tmp passover file & close')
+            sys.exit(0)
         os.chdir(os.path.dirname(sys.argv[0]))
         self.my_settings_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
-        self.UUID = subprocess.run(["cat", "/etc/machine-id"], stdout=subprocess.PIPE).stdout.decode('UTF-8').rstrip()
         log('')
         log('TBtray started ################################################ ')
         self.matches = 0
@@ -526,6 +533,17 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(1000)
 
     def fire(self):
+        if os.path.isfile('/tmp/tbpassover'):
+            if self.INTRAY:
+                self.INTRAY = False
+                self.popup.textBrowser.INTRAY = False
+                self.popup_test.textBrowser.INTRAY = False
+                subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'remove,skip_taskbar'])
+            elif not self.INTRAY:
+                subprocess.run(["xdotool", "windowunmap", self.windowid])
+                self.INTRAY = True
+            os.remove('/tmp/tbpassover')
+            log('passover')
         stdout = subprocess.run(["pgrep", "-i", "thunderbird"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
         if not stdout: sys.exit()
         if self.badprofile:

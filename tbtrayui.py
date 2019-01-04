@@ -268,7 +268,7 @@ class Ui_Form(object):
         self.checkBox_favicons.setText(_translate("Form", "Show Mail Favicons"))
         self.label.setText(_translate("Form", "    Opacity"))
         self.toolButton_firepopup.setText(_translate("Form", "Popup Test"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Form", "Genral"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("Form", "General"))
         self.groupBox.setTitle(_translate("Form", "Profile Path selector"))
         self.toolButton_profilepath.setText(_translate("Form", "..."))
         self.label_2.setText(_translate("Form", "Profile List  ( .msf files)"))
