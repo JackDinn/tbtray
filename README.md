@@ -44,6 +44,7 @@ This does not mean you can not use the unified mail box with Thunderbird, just t
 * set icons (one for default (no unread), another for the notification
 * Allow TBtray to take over the popup notification & sound from TB
 * You can also click on the popup notification to show the TB window
+* You can also use the shortcut launch icon to hide/show TB
 * Set opacity of popup
 * popup duration control
 * Popup option to Show favicons alongside individual emails (these are scraped once & then cached locally)
@@ -55,7 +56,7 @@ This does not mean you can not use the unified mail box with Thunderbird, just t
 
 ![Popup window](https://i.imgur.com/0AnneUK.png)
 
-![Basic Settings](https://i.imgur.com/FLMLKWw.png)
+![Basic Settings](https://i.imgur.com/pDZED9v.png)
 
 
 ### General usage ###
