@@ -533,7 +533,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             self.timetriggercheck.start(1000)
 
     def fire(self):
-        if os.path.isfile('/tmp/tbpassover'):
+        if self.checkbox_minimizetotray.isChecked() and os.path.isfile('/tmp/tbpassover'):
             if self.INTRAY:
                 self.INTRAY = False
                 self.popup.textBrowser.INTRAY = False

@@ -29,7 +29,7 @@ Find (or manually enter) the path to your INBOX.msf files in the top bar of the 
 into your profile list box.
 
 example of INBOX.msf :-
-/home/greg/.thunderbird/tzvg3gbn.default/ImapMail/imap.gmail.com/INBOX.msf
+/home/user/.thunderbird/tzvg3gbn.default/ImapMail/imap.gmail.com/INBOX.msf
 
 
 #### **_You can not use the unified (Smart-mail) inbox._** ####
@@ -44,7 +44,7 @@ This does not mean you can not use the unified mail box with Thunderbird, just t
 * set icons (one for default (no unread), another for the notification
 * Allow TBtray to take over the popup notification & sound from TB
 * You can also click on the popup notification to show the TB window
-* You can also use the shortcut launch icon to hide/show TB
+* You can also use the shortcut launch icon to hide/show TB (if you have made one)
 * Set opacity of popup
 * popup duration control
 * Popup option to Show favicons alongside individual emails (these are scraped once & then cached locally)
