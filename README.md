@@ -62,6 +62,8 @@ This does not mean you can not use the unified mail box with Thunderbird, just t
 ### General usage ###
 TBtray executes TB so i advise creating a launcher that runs TBtray to replace your TB launcher.
 
+It can sometimes take upto 1 second for TBtray to hide TB, this is unavoidable.
+
 You can close both TBtray and TB together via the tray icon.
 
 You can run TBtray after TB is already running and it will work but you may need to "synchronize" it by clicking the tray icon.
