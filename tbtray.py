@@ -276,7 +276,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timetriggercheck = QTimer(self)
         self.tray_icon = QSystemTrayIcon(self)
         self.INTRAY = False
-        self.winclass = 'thunderbird'
+        self.winclass = 'Mozilla thunderbird'
         self.windowid = 0
         self.setupUi(self)
         self.profiles = []
@@ -506,8 +506,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def iconclick(self):
         if self.checkbox_minimizetotray.isChecked() and not self.badprofile:
+            log('self.windowid = ' + str(self.windowid))
+            log('self.INTRAY = ' + str(self.INTRAY))
             self.timetriggercheck.stop()
-            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
@@ -521,7 +523,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def iconmenushowhide(self):
         if not self.badprofile:
             self.timetriggercheck.stop()
-            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if stdout:
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
@@ -567,7 +569,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.popup.textBrowser.windowid = self.windowid
                 log('grabbed window ' + idx[0])
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
-            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--class", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if not stdout and self.windowid:
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
