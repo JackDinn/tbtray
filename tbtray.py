@@ -521,7 +521,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             log('self.windowid = ' + str(self.windowid))
             log('self.INTRAY = ' + str(self.INTRAY))
             self.timetriggercheck.stop()
-            # checkhidden = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--limit", "1", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if checkvisable():
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
@@ -535,7 +534,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def iconmenushowhide(self):
         if not self.badprofile:
             self.timetriggercheck.stop()
-            # stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if checkvisable():
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
@@ -581,7 +579,6 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.popup.textBrowser.windowid = self.windowid
                 log('grabbed window ' + idx[0])
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
-            # stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
             if not checkvisable() and self.windowid:
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
