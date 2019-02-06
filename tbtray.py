@@ -26,6 +26,18 @@ def close():
     sys.exit(0)
 
 
+def checkvisable():
+    winname = ' - Mozilla Thunderbird'
+    try:
+        # check 3 times because sometimes when there are lots of child windows open it misses the fact that the TB window is actually visible.
+        for two in range(3):
+            out = subprocess.run(["xdotool", "search", "--all", "--onlyvisible", "--maxdepth", "3", "--limit", "1", "--name", winname], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            if out: return True
+    except:
+        pass
+    return False
+
+
 def log(tex=''):
     try:
         tail = subprocess.run(["tail", "-n", "500", "log.txt"], stdout=subprocess.PIPE).stdout.decode('UTF-8')
@@ -276,7 +288,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timetriggercheck = QTimer(self)
         self.tray_icon = QSystemTrayIcon(self)
         self.INTRAY = False
-        self.winclass = 'Mozilla thunderbird'
+        # self.winclass = ' - Mozilla Thunderbird'
         self.windowid = 0
         self.setupUi(self)
         self.profiles = []
@@ -509,8 +521,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             log('self.windowid = ' + str(self.windowid))
             log('self.INTRAY = ' + str(self.INTRAY))
             self.timetriggercheck.stop()
-            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
-            if stdout:
+            # checkhidden = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--limit", "1", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            if checkvisable():
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
             elif self.winId():
@@ -523,8 +535,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
     def iconmenushowhide(self):
         if not self.badprofile:
             self.timetriggercheck.stop()
-            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
-            if stdout:
+            # stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            if checkvisable():
                 subprocess.run(["xdotool", "windowunmap", self.windowid])
                 self.INTRAY = True
             elif self.winId():
@@ -569,8 +581,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.popup.textBrowser.windowid = self.windowid
                 log('grabbed window ' + idx[0])
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
-            stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
-            if not stdout and self.windowid:
+            # stdout = subprocess.run(["xdotool", "search", "--onlyvisible", "--maxdepth", "3", "--all", "--name", self.winclass], stdout=subprocess.PIPE).stdout.decode('UTF-8')
+            if not checkvisable() and self.windowid:
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'add,skip_taskbar'])
                 self.INTRAY = True
         for profile in self.profiles:
