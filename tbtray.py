@@ -279,7 +279,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             bob.close()
             log('make tmp passover file & close')
             sys.exit(0)
-        os.chdir(os.path.dirname(sys.argv[0]))
+        os.chdir(os.path.dirname(os.path.realpath(__file__)))
         self.my_settings_file = Path(str(Path.home()) + '/.config/tbtray/settings.ini')
         log('')
         log('TBtray started ################################################ ')
