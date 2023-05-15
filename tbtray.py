@@ -6,7 +6,6 @@ import os
 import re
 import subprocess
 import sys
-import time
 import urllib.request
 from email.header import decode_header, make_header
 from pathlib import Path
@@ -430,7 +429,8 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def func_defaulticon(self):
         x = \
-        QFileDialog.getOpenFileName(self, 'Select Default Icon', 'res/', "Icons .png .ico .svg (*.png *.ico *.svg)")[0]
+            QFileDialog.getOpenFileName(self, 'Select Default Icon', 'res/',
+                                        "Icons .png .ico .svg (*.png *.ico *.svg)")[0]
         if x: self.lineedit_defulticon.setText(x)
 
     def func_notifyicon(self):
@@ -472,8 +472,9 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
 
     def selectfile(self):
         x = \
-        QFileDialog.getOpenFileName(self, 'Select Profile .msf File', '/home/' + getpass.getuser() + '/.thunderbird/',
-                                    "INBOX.msf(INBOX.msf)")[0]
+            QFileDialog.getOpenFileName(self, 'Select Profile .msf File',
+                                        '/home/' + getpass.getuser() + '/.thunderbird/',
+                                        "INBOX.msf(INBOX.msf)")[0]
         if x: self.editline_profilepath.setText(x)
 
     def cancel(self):
