@@ -178,11 +178,11 @@ def readmessage(path):
 
 
 class TextBrowser(QtWidgets.QTextBrowser):
-    windowid: int
+    windowid: str
 
     def __init__(self, parent=None):
         super(TextBrowser, self).__init__(parent)
-        self.windowid = 0
+        self.windowid = ""
         self.INTRAY = False
         self.hideme = False
         self.height = 100
@@ -202,11 +202,11 @@ class TextBrowser(QtWidgets.QTextBrowser):
         self.setGeometry(5, 5, self.width + 10, self.height + 5)
 
     def mouseReleaseEvent(self, event):
-        subprocess.run(["xdotool", "windowmap", self.windowid])
+        subprocess.run(["xdotool", "windowmap", str(self.windowid)])
         subprocess.run(
             ["wmctrl", "-i", "-r", str(self.windowid), "-b", "remove,skip_taskbar"]
         )
-        subprocess.run(["xdotool", "windowactivate", self.windowid])
+        subprocess.run(["xdotool", "windowactivate", str(self.windowid)])
         self.hideme = True
         self.INTRAY = True
 
@@ -284,7 +284,7 @@ class Popup(QtWidgets.QDialog):
                             fromxy = fromx + "&"
                             log("fromxy " + fromxy)
                             fav = re.findall(
-                                "@\S*?\.?([\w|-]*(\.\w{2,3})?\.\w{2,3})&", fromxy
+                                r"@\S*?\.?([\w|-]*(\.\w{2,3})?\.\w{2,3})&", fromxy
                             )
                             if len(fav) > 0:
                                 log("get favicon " + fav[0][0])
@@ -347,7 +347,7 @@ class Popup(QtWidgets.QDialog):
 
 def getscreenheight():
     out = subprocess.run(["xrandr"], stdout=subprocess.PIPE).stdout.decode("UTF-8")
-    matches = re.findall("\d*x(\d*).*?\*", out)
+    matches = re.findall(r"\d*x(\d*).*?\*", out)
     if matches:
         log("get screen height " + matches[0])
         return int(matches[0])
@@ -378,7 +378,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         self.timetriggercheck = QTimer(self)
         self.tray_icon = QSystemTrayIcon(self)
         self.INTRAY = False
-        self.windowid = 0
+        self.windowid = ""
         self.setupUi(self)
         self.profiles = []
         self.badprofile = True
@@ -674,10 +674,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             log("self.INTRAY = " + str(self.INTRAY))
             self.timetriggercheck.stop()
             if checkvisable():
-                subprocess.run(["xdotool", "windowunmap", self.windowid])
+                subprocess.run(["xdotool", "windowunmap", str(self.windowid)])
                 self.INTRAY = True
             elif self.winId():
-                subprocess.run(["xdotool", "windowmap", self.windowid])
+                subprocess.run(["xdotool", "windowmap", str(self.windowid)])
                 subprocess.run(
                     [
                         "wmctrl",
@@ -688,7 +688,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         "remove,skip_taskbar",
                     ]
                 )
-                subprocess.run(["xdotool", "windowactivate", self.windowid])
+                subprocess.run(["xdotool", "windowactivate", str(self.windowid)])
                 self.INTRAY = False
             self.timetriggercheck.start(1000)
 
@@ -696,10 +696,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
         if not self.badprofile:
             self.timetriggercheck.stop()
             if checkvisable():
-                subprocess.run(["xdotool", "windowunmap", self.windowid])
+                subprocess.run(["xdotool", "windowunmap", str(self.windowid)])
                 self.INTRAY = True
             elif self.winId():
-                subprocess.run(["xdotool", "windowmap", self.windowid])
+                subprocess.run(["xdotool", "windowmap", str(self.windowid)])
                 subprocess.run(
                     [
                         "wmctrl",
@@ -710,7 +710,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                         "remove,skip_taskbar",
                     ]
                 )
-                subprocess.run(["xdotool", "windowactivate", self.windowid])
+                subprocess.run(["xdotool", "windowactivate", str(self.windowid)])
                 self.INTRAY = False
             self.timetriggercheck.start(1000)
 
@@ -733,7 +733,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                     ]
                 )
             elif not self.INTRAY:
-                subprocess.run(["xdotool", "windowunmap", self.windowid])
+                subprocess.run(["xdotool", "windowunmap", str(self.windowid)])
                 self.INTRAY = True
             os.remove("/tmp/tbpassover")
             log("passover")
@@ -763,7 +763,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
             stdout = subprocess.run(
                 ["wmctrl", "-lx"], stdout=subprocess.PIPE
             ).stdout.decode("UTF-8")
-            idx = re.findall("(\dx\w+)..0 Mail\.thunderbird", str(stdout))
+            idx = re.findall(r"(\dx\w+)..0 Mail\.thunderbird", str(stdout))
             if idx:
                 self.windowid = idx[0]
                 self.popup.textBrowser.windowid = self.windowid
@@ -793,7 +793,7 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                     # matchesx = re.findall('\^A2=(\w+)', filetext) Had to change this because thunderbird started using A1=x instead of A2= but just on jackdinn, no idea why ??
                     # matchesx = re.findall('\(\^A[1|2]=(\w+)\)\]', filetext)
                     # matchesx = re.findall('\[1:\^9[E|F]\(\^A[1|2]=(\w+)\)', filetext)
-                    matchesx = re.findall("\(\^A1=(\w+)\)", filetext)
+                    matchesx = re.findall(r"\(\^A1=(\w+)\)", filetext)
                     # matchesx = re.findall('\(\^9[3|4]=1\)][\s\S]*?A[1|2]=(\w+)\)', filetext)
                     if matchesx:
                         self.matches += int(matchesx[-1], 16)
