@@ -610,8 +610,10 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.windowid = idx[0]
                 self.popup.textBrowser.windowid = self.windowid
                 log('grabbed window ' + idx[0])
-                subprocess.run(["xdotool", "windowunmap", self.windowid])
-                self.INTRAY = True
+                ## hide thunderbird at start
+                # subprocess.run(["xdotool", "windowunmap", self.windowid])
+                # self.INTRAY = True
+                self.INTRAY = False
         if self.checkbox_minimizetotray.isChecked() and not self.INTRAY:
             if not checkvisable() and self.windowid:
                 subprocess.run(['wmctrl', '-i', '-r', str(self.windowid), '-b', 'add,skip_taskbar'])
@@ -622,9 +624,14 @@ class MainApp(QtWidgets.QDialog, tbtrayui.Ui_Form):
                 self.matches = 0
                 for profile2 in self.profiles:
                     if not os.path.isfile(profile2): continue
+                    if not 'smart' in profile2: continue # this line was to make sure to only count the smart mailbox because i had such a problem trying to get the count.
                     filetext = subprocess.run(["tail", "-n", "2000", profile2], stdout=subprocess.PIPE).stdout.decode(
                         'UTF-8')
-                    matchesx = re.findall('\^A2=(\w+)', filetext)
+                    #matchesx = re.findall('\^A2=(\w+)', filetext) Had to change this because thunderbird started using A1=x instead of A2= but just on jackdinn, no idea why ??
+                    # matchesx = re.findall('\(\^A[1|2]=(\w+)\)\]', filetext)
+                    # matchesx = re.findall('\[1:\^9[E|F]\(\^A[1|2]=(\w+)\)', filetext)
+                    matchesx = re.findall('\(\^A1=(\w+)\)', filetext)
+                    # matchesx = re.findall('\(\^9[3|4]=1\)][\s\S]*?A[1|2]=(\w+)\)', filetext)
                     if matchesx: self.matches += int(matchesx[-1], 16)
                 if self.matches > 0:
                     if self.checkbox_showcount.isChecked():
